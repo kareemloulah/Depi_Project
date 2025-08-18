@@ -1,0 +1,37 @@
+---
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: dockerfile
+    container_name: server
+    depends_on:
+      - mongodb
+    ports:
+      - "8001:8001" # change if needed
+    environment:
+      MONGO_URI: mongodb://kaap:kaap@mongodb:27017/
+
+  client:
+    build:
+      context: ./client
+      dockerfile: dockerfile
+    container_name: client
+    depends_on:
+      - mongodb
+    ports:
+      - "5173:5173" # change if needed
+
+  mongodb:
+    image: mongodb/mongodb-atlas-local:8.0.7
+    container_name: mongodb
+    environment:
+      -MONGODB_INITDB_ROOT_USERNAME: "kaap"
+      -MONGODB_INITDB_ROOT_PASSWORD: "kaap"
+    ports:
+      - "27017:27017"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+
