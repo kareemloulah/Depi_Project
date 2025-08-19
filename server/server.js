@@ -9,7 +9,7 @@ const PORT = 8001;
 
 
 
-connectDB(process.env.MONGO_URI)
+connectDB("mongodb://kaap:kaap@mongodb/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.6")
     .then(() => {
         console.log('Connected to MongoDB');
     })

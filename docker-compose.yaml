@@ -9,9 +9,8 @@ services:
       - mongodb
     ports:
       - "8001:8001" # change if needed
-    environment:
-      MONGO_URI: mongodb://kaap:kaap@mongodb:27017/
-
+    networks:
+      - url-shortener
   client:
     build:
       context: ./client
@@ -21,17 +20,25 @@ services:
       - mongodb
     ports:
       - "5173:5173" # change if needed
-
+    networks:
+      - url-shortener
   mongodb:
-    image: mongodb/mongodb-atlas-local:8.0.7
-    container_name: mongodb
+    hostname: mongodb
+    image: mongodb/mongodb-atlas-local
     environment:
-      -MONGODB_INITDB_ROOT_USERNAME: "kaap"
-      -MONGODB_INITDB_ROOT_PASSWORD: "kaap"
+      - MONGODB_INITDB_ROOT_USERNAME=kaap
+      - MONGODB_INITDB_ROOT_PASSWORD=kaap
     ports:
-      - "27017:27017"
-    deploy:
-      restart_policy:
-        condition: on-failure
-
+      - 27017:27017
+    volumes:
+      - data:/data/db
+      - config:/data/configdb
+    networks:
+      - url-shortener
+volumes:
+  data:
+  config:
+networks:
+  url-shortener:
+    driver: bridge
 
