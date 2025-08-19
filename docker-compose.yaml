@@ -19,7 +19,7 @@ services:
     depends_on:
       - mongodb
     ports:
-      - "5173:5173" # change if needed
+      - "5000:5000" # change if needed
     networks:
       - url-shortener
   mongodb:
