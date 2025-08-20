@@ -101,7 +101,7 @@ Depi_Project/
 ### Prerequisites
 
 - **Docker & Docker Compose** (for Option A), or
-- **Node.js 18+**, **Python 3.10+**, and **MongoDB** locally (for Option B).
+- **Node.js**, **Python 3.10+**, and **MongoDB** locally (for Option B).
 
 ### Option A — Run with Docker Compose
 
@@ -111,19 +111,16 @@ Depi_Project/
 
 ```
 PORT=8001
-NODE_ENV=development
-MONGO_URI=mongodb://mongo:27017/url_shortener
-CORS_ORIGIN=http://localhost:5000
-BASE_URL=http://localhost:8001
+MONGO_URI=mongodb://kaap:kaap@mongodb/?directConnection=true
+
 ```
 
 - **Client** (`client/.env` or config in `app.py`):
 
 ```
-API_BASE_URL=http://server:8001
-FLASK_ENV=development
-FLASK_RUN_HOST=0.0.0.0
-FLASK_RUN_PORT=5000
+API_GET_URL=http://server:8001/
+API_POST_URL=http://server:8001/url
+
 ```
 
 2. From the repo root:
@@ -163,7 +160,7 @@ Expects envs:
 
 ```
 PORT=8001
-MONGO_URI=mongodb://localhost:27017/url_shortener
+MONGO_URI=mongodb://localhost:27017/
 CORS_ORIGIN=http://localhost:5000
 BASE_URL=http://localhost:8001
 ```
@@ -190,7 +187,7 @@ Open [http://localhost:5000](http://localhost:5000)
 | Name          | Example                               | Description                                      |
 | ------------- | ------------------------------------- | ------------------------------------------------ |
 | `PORT`        | `8001`                                | Port for Express server                          |
-| `MONGO_URI`   | `mongodb://mongo:27017/url_shortener` | MongoDB connection string                        |
+| `MONGO_URI`   | `mongodb://kaap:kaap@mongodb/?directConnection=true` | MongoDB connection string                        |
 | `CORS_ORIGIN` | `http://localhost:5000`               | Allowed origin for Flask UI                      |
 | `BASE_URL`    | `http://localhost:8001`               | Public base URL used when generating short links |
 
@@ -199,8 +196,7 @@ Open [http://localhost:5000](http://localhost:5000)
 | Name           | Example              | Description                            |
 | -------------- | -------------------- | -------------------------------------- |
 | `API_BASE_URL` | `http://server:8001` | Internal URL for API requests (Docker) |
-| `FLASK_ENV`    | `development`        | Flask environment                      |
-| `FLASK_RUN_*`  | `0.0.0.0` / `5000`   | Host/port setup                        |
+
 
 ---
 
@@ -224,7 +220,6 @@ Open [http://localhost:5000](http://localhost:5000)
 {
   "id": "abc123", // shortId
   "redirectUrl": "https://example.com/very/long/path",
-  "shortUrl": "http://localhost:8001/abc123"
 }
 ```
 
