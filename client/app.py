@@ -3,7 +3,6 @@ import requests
 
 app = Flask(__name__)
 
-# HTML template (inline for simplicity)
 TEMPLATE = """
 <!DOCTYPE html>
 <html>
@@ -39,11 +38,11 @@ def index():
     if request.method == "POST":
         user_url = request.form.get("url")
         try:
-            # Send POST request to your backend
+
             resp = requests.post("http://server:8001/url", json={"url": user_url})
             resp.raise_for_status()
-            data = resp.json()              # parse JSON
-            response_text = data.get('id')  # extract only 'id'
+            data = resp.json()              
+            response_text = data.get('id')  
         except Exception as e:
             response_text = f"Error: {e}"
 
@@ -52,12 +51,11 @@ def index():
 
 @app.route("/<shortId>")
 def go(shortId):
-    # send Get request to the API to get the redirect URL
     try:
         resp = requests.get(f"http://server:8001/{shortId}")
         resp.raise_for_status()
-        data = resp.json()  # parse JSON
-        redirect_url = data.get('redirectUrl')  # extract 'url'
+        data = resp.json()  
+        redirect_url = data.get('redirectUrl')  
         if redirect_url:
             return redirect(redirect_url, code=302)
         else:
