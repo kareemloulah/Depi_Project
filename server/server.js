@@ -3,7 +3,7 @@ import express from "express";
 import { connectDB } from "./connect.js";
 
 import { urlRoute } from "./routes/url.js";
-import { URL } from "./models/url.js"; // Importing the URL model to ensure it's registered
+import { URL } from "./models/url.js"; 
 const app = express();
 const PORT = 8001;
 
@@ -31,7 +31,7 @@ app.get("/:shortId", async (req, res) => {
           },
         },
       },
-      { new: true } // return updated document
+      { new: true } 
     );
 
     if (!entry) {

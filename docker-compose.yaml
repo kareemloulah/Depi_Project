@@ -8,7 +8,7 @@ services:
     depends_on:
       - mongodb
     ports:
-      - "8001:8001" # change if needed
+      - "8001:8001" 
     networks:
       - url-shortener
   client:
@@ -19,7 +19,7 @@ services:
     depends_on:
       - mongodb
     ports:
-      - "5000:5000" # change if needed
+      - "5000:5000" 
     networks:
       - url-shortener
   mongodb:
