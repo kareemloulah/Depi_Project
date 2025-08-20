@@ -40,16 +40,14 @@ def index():
         user_url = request.form.get("url")
         try:
             # Send POST request to your backend
-            resp = requests.post("http://server:8001/url", json={"url": user_url})
+            resp = requests.post("http://server:8001/", json={"url": user_url})
             resp.raise_for_status()
             data = resp.json()              # parse JSON
             response_text = data.get('id')  # extract only 'id'
-            app.logger.info(f"Received response: {data}")
-            client_ip= request.headers.get('X-Forwarded-For', request.remote_addr)
         except Exception as e:
             response_text = f"Error: {e}"
 
-    return render_template_string(TEMPLATE, response=response_text , ip=client_ip )
+    return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
 
 
 if __name__ == "__main__":
