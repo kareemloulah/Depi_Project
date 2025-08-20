@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request , redirect
 import requests
 
 app = Flask(__name__)
@@ -40,7 +40,7 @@ def index():
         user_url = request.form.get("url")
         try:
             # Send POST request to your backend
-            resp = requests.post("http://server:8001/", json={"url": user_url})
+            resp = requests.post("http://server:8001/url", json={"url": user_url})
             resp.raise_for_status()
             data = resp.json()              # parse JSON
             response_text = data.get('id')  # extract only 'id'
@@ -49,6 +49,21 @@ def index():
 
     return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
 
+
+@app.route("/<shortId>")
+def go(shortId):
+    # send Get request to the API to get the redirect URL
+    try:
+        resp = requests.get(f"http://server:8001/{shortId}")
+        resp.raise_for_status()
+        data = resp.json()  # parse JSON
+        redirect_url = data.get('redirectUrl')  # extract 'url'
+        if redirect_url:
+            return redirect(redirect_url, code=302)
+        else:
+            return "URL not found", 404
+    except Exception as e:
+        return f"Error: {e}", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
