@@ -1,24 +1,26 @@
-import {mongoose,Schema} from 'mongoose';
+import { mongoose, Schema } from "mongoose";
 
-const urlSchema = new Schema({
+const urlSchema = new Schema(
+  {
     shortId: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
     redirectUrl: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
-    visitHistory: [{
+    visitHistory: [
+      {
         Timestamp: {
-            type: Number
+          type: Number,
         },
-    }]
-
-}, { timestamps: true, }
-
+      },
+    ],
+  },
+  { timestamps: true }
 );
-const URL = mongoose.model('URL', urlSchema);
+const URL = mongoose.model("URL", urlSchema);
 
-export {URL};
+export { URL };

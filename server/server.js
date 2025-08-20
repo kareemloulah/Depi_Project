@@ -19,31 +19,30 @@ connectDB(
 
 app.use(express.json());
 app.use("/", urlRoute);
-// app.get("/:shortId", async (req, res) => {
-//   try {
-//     const shortId = req.params.shortId;
-//     const entry = await URL.findOneAndUpdate(
-//       { shortId },
-//       {
-//         $push: {
-//           visitHistory: {
-//             timestamp: Date.now(),
-//           },
-//         },
-//       },
-//       { new: true } // return updated document
-//     );
+app.get("/:shortId", async (req, res) => {
+  try {
+    const shortId = req.params.shortId;
+    const entry = await URL.findOneAndUpdate(
+      { shortId },
+      {
+        $push: {
+          visitHistory: {
+            timestamp: Date.now(),
+          },
+        },
+      },
+      { new: true } // return updated document
+    );
 
-//     if (!entry) {
-//       return res.status(404).send("Short URL not found");
-//     }
-
-//     res.redirect(entry.redirectUrl);
-//   } catch (error) {
-//     console.error("Error handling redirect:", error);
-//     res.status(500).send("Internal Server Error");
-//   }
-// });
+    if (!entry) {
+      return res.status(404).send("Short URL not found");
+    }
+    res.json(entry);
+  } catch (error) {
+    console.error("Error handling redirect:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

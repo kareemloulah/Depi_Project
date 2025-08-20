@@ -1,36 +1,27 @@
+import { nanoid } from "nanoid";
 
+import { URL } from "../models/url.js";
 
-import { nanoid } from 'nanoid';
+async function handleGenerateNewShortURL(req, res) {
+  const body = req.body;
 
-import {URL} from '../models/url.js';
+  console.log("body", body);
 
-async function handleGenerateNewShortURL(req,res) {
-    
-    
-    const body = req.body;
+  console.log("body", body.url);
 
-    console.log("body", body);
+  if (!body.url) {
+    return res.status(400).json({ error: "Redirect URL is required" });
+  }
 
-    console.log("body", body.url);
-    
+  const shortID = nanoid(8);
 
+  await URL.create({
+    shortId: shortID,
+    redirectUrl: body.url,
+    visitHistory: [],
+  });
 
-    if (!body.url) {
-        return res.status(400).json({error: 'Redirect URL is required'});
-    };
-
-
-    const shortID = nanoid(8);
-
-    await URL.create({
-        shortId: shortID,
-        redirectUrl: body.url,
-        visitHistory: []
-    });
-
-    return res.json({id : shortID})
-
-    
+  return res.json({ id: shortID });
 }
 
 export { handleGenerateNewShortURL };
