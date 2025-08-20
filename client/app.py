@@ -26,7 +26,7 @@ TEMPLATE = """
     {% if response %}
     <div class="response-box">
         <strong>Response:</strong>
-        <pre>http://{{ ip }}/{{ response }}</pre>
+        <pre>http://{{ ip }}:{{ port }}/{{ response }}</pre>
     </div>
     {% endif %}
 </body>
@@ -47,7 +47,7 @@ def index():
         except Exception as e:
             response_text = f"Error: {e}"
 
-    return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+    return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.server[0]) , port=request.environ.get('HTTP_X_REAL_IP', request.server[1]))
 
 
 @app.route("/<shortId>")
