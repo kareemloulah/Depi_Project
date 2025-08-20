@@ -1,6 +1,6 @@
 from flask import Flask, render_template_string, request , redirect
 import requests
-
+import os
 app = Flask(__name__)
 
 TEMPLATE = """
@@ -39,7 +39,7 @@ def index():
         user_url = request.form.get("url")
         try:
 
-            resp = requests.post("http://server:8001/url", json={"url": user_url})
+            resp = requests.post(os.environ.get("API_POST_URL"), json={"url": user_url})
             resp.raise_for_status()
             data = resp.json()              
             response_text = data.get('id')  
@@ -52,7 +52,7 @@ def index():
 @app.route("/<shortId>")
 def go(shortId):
     try:
-        resp = requests.get(f"http://server:8001/{shortId}")
+        resp = requests.get(f"{os.environ.get("API_GET_URL")}/{shortId}")
         resp.raise_for_status()
         data = resp.json()  
         redirect_url = data.get('redirectUrl')  
@@ -64,4 +64,4 @@ def go(shortId):
         return f"Error: {e}", 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000 , debug=True)
