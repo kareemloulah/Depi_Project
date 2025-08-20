@@ -24,10 +24,6 @@ A small monorepo that demonstrates a simple URL shortener with:
 - [Environment Variables](#environment-variables)
 - [API Reference](#api-reference)
 - [Data Model](#data-model)
-- [Troubleshooting](#troubleshooting)
-- [Development Notes](#development-notes)
-- [Roadmap / TODO](#roadmap--todo)
-- [License](#license)
 
 ---
 
