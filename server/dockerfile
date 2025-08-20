@@ -1,13 +1,11 @@
 FROM node:22-alpine
-# Use the official Node.js 22 Alpine image as the base image
-# This image is lightweight and suitable for running Node.js applications.
+
 WORKDIR /app
-# Set the working directory inside the container to /app
-# All subsequent commands will be run in this directory.
+
 COPY . .
 
 RUN npm install 
 
 EXPOSE 8001
-# Expose port 3000 for the application to listen on
+
 CMD ["npm", "start"]

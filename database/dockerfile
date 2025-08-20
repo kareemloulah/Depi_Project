@@ -1,16 +1,5 @@
 FROM mongodb/mongodb-atlas-local:8.0.7
-# Use the official MongoDB Atlas Local image as the base image
-# Set the environment variables for MongoDB root username and password
-# use --env-file to load environment variables from a file
-# Expose the default MongoDB port
-# mount voulume to persist data
-# The data can be accessed from the host machine by mounting a volume to this directory.
+
 EXPOSE 27017
-# Start the MongoDB server
+
 CMD ["mongod", "--bind_ip_all"]
-# This command starts the MongoDB server and binds it to all IP addresses
-# so that it can accept connections from outside the container.
-# The database will be initialized with the root username and password specified in the environment variables.
-# The database will be accessible on port 27017.
-# The image is designed to be used in a Docker environment, allowing for easy deployment and management
-# of a MongoDB database instance.

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-mongoose.set("strictQuery", true); // Disable strict query mode
+mongoose.set("strictQuery", true); 
 async function connectDB(url) {
   return mongoose.connect(url);
 }
