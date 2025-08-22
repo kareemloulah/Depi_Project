@@ -25,7 +25,7 @@ TEMPLATE = """
     {% if response %}
     <div class="response-box">
         <strong>Response:</strong>
-        <pre>http://{{ ip }}:{{ port }}/{{ response }}</pre>
+        <pre>http://{{ ip }}/{{ response }}</pre>
     </div>
     {% endif %}
 </body>
@@ -46,7 +46,7 @@ def index():
         except Exception as e:
             response_text = f"Error: {e}"
 
-    return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.server[0]) , port=request.environ.get('HTTP_X_REAL_IP', request.server[1]))
+    return render_template_string(TEMPLATE, response=response_text ,ip = os.environ.get("ip"))
 
 
 
