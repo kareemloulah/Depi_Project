@@ -21,11 +21,16 @@ TEMPLATE = """
         <input type="text" name="url" placeholder="Enter URL" required>
         <button type="submit">Submit</button>
     </form>
-
     {% if response %}
     <div class="response-box">
         <strong>Response:</strong>
         <pre>http://{{ ip }}/{{ response }}</pre>
+        <p> </p>
+        <a href="/{{ response }}">Link</a>
+        <p> </p>
+        here is the analytics link:
+        <a href="/analytics/{{ response }}">Analytics</a>
+        
     </div>
     {% endif %}
 </body>
