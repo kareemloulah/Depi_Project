@@ -32,13 +32,13 @@ TEMPLATE = """
 </html>
 """
 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route("/", methods=["POST"])
 def index():
     response_text = None
     if request.method == "POST":
         user_url = request.form.get("url")
         try:
-
             resp = requests.post(os.environ.get("API_POST_URL"), json={"url": user_url})
             resp.raise_for_status()
             data = resp.json()              
@@ -47,6 +47,7 @@ def index():
             response_text = f"Error: {e}"
 
     return render_template_string(TEMPLATE, response=response_text ,ip=request.environ.get('HTTP_X_REAL_IP', request.server[0]) , port=request.environ.get('HTTP_X_REAL_IP', request.server[1]))
+
 
 
 @app.route("/<shortId>")
@@ -64,4 +65,5 @@ def go(shortId):
         return f"Error: {e}", 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000 , debug=True)
+    app.run(host='0.0.0.0', port=80 , debug=True)
+
