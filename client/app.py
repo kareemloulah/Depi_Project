@@ -9,10 +9,52 @@ TEMPLATE = """
 <head>
     <title>URL Sender</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 50px; }
-        input[type=text] { width: 300px; padding: 8px; }
-        button { padding: 8px 16px; }
-        .response-box { margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        input[type=text] {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -25,12 +67,11 @@ TEMPLATE = """
     <div class="response-box">
         <strong>Response:</strong>
         <pre>http://{{ ip }}/{{ response }}</pre>
-        <p> </p>
+        <p></p>
         <a href="/{{ response }}">Link</a>
-        <p> </p>
-        here is the analytics link:
+        <p></p>
+        Here is the analytics link:
         <a href="/analytics/{{ response }}">Analytics</a>
-        
     </div>
     {% endif %}
 </body>
@@ -107,5 +148,5 @@ def Analytics(shortId):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80 , debug=True)
+    app.run(ssl_context='adhoc',host='0.0.0.0', port=443 , debug=True)
 
