@@ -33,6 +33,25 @@ TEMPLATE = """
 """
 
 
+analytics = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL analytics</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        input[type=text] { width: 300px; padding: 8px; }
+        button { padding: 8px 16px; }
+        .response-box { margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Number of Link Visits</h1>
+    <h2>{{ NumberOfVisits }}</h2>
+</body>
+</html>
+"""
+
 @app.route("/", methods=[ "GET" , "POST"])
 def index():
 
@@ -44,11 +63,12 @@ def index():
             resp = requests.post(os.environ.get("API_POST_URL"), json={"url": user_url})
             resp.raise_for_status()
             data = resp.json()              
-            response_text = data.get('id')  
+            response_text = data.get('id') 
         except Exception as e:
             response_text = f"Error: {e}"
 
     return render_template_string(TEMPLATE, response=response_text ,ip = requests.get("http://checkip.amazonaws.com").text)
+
 
 
 @app.route("/<shortId>")
@@ -64,6 +84,22 @@ def go(shortId):
             return "URL not found", 404
     except Exception as e:
         return f"Error: {e}", 500
+
+
+@app.route("/analytics/<shortId>")
+def Analytics(shortId):
+    try:
+        resp = requests.get(f"{os.environ.get("API_GET_URL")}/{shortId}")
+        resp.raise_for_status() 
+        resp=resp.json()
+        NumberOfVisits = len(resp.get('visitHistory'))
+        if NumberOfVisits:
+            return render_template_string(analytics, NumberOfVisits=NumberOfVisits)
+        else:
+            return "URL not found", 404
+    except Exception as e:
+        return f"Error: {e}", 50
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80 , debug=True)
