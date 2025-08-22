@@ -47,7 +47,7 @@ def index():
         except Exception as e:
             response_text = f"Error: {e}"
 
-    return render_template_string(TEMPLATE, response=response_text ,ip = request.get("http://checkip.amazonaws.com"))
+    return render_template_string(TEMPLATE, response=response_text ,ip = requests.get("http://checkip.amazonaws.com"))
 
 
 
