@@ -131,7 +131,7 @@ docker compose up --build
 
 3. Open the app:
 
-- UI: [http://localhost:5000](http://localhost:5000)
+- UI: [http://localhost:80](http://localhost:80)
 - API: [http://localhost:8001](http://localhost:8001)
 - Mongo (container name `mongo`) listens on `27017` inside the network.
 
@@ -161,7 +161,7 @@ Expects envs:
 ```
 PORT=8001
 MONGO_URI=mongodb://localhost:27017/
-CORS_ORIGIN=http://localhost:5000
+CORS_ORIGIN=http://localhost:80
 BASE_URL=http://localhost:8001
 ```
 
@@ -173,10 +173,10 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 # set API_BASE_URL in client/.env or app.py
-flask --app app run --host 0.0.0.0 --port 5000
+flask --app app run --host 0.0.0.0 --port 80
 ```
 
-Open [http://localhost:5000](http://localhost:5000)
+Open [http://localhost:80](http://localhost:80)
 
 ---
 
@@ -188,7 +188,7 @@ Open [http://localhost:5000](http://localhost:5000)
 | ------------- | ------------------------------------- | ------------------------------------------------ |
 | `PORT`        | `8001`                                | Port for Express server                          |
 | `MONGO_URI`   | `mongodb://kaap:kaap@mongodb/?directConnection=true` | MongoDB connection string                        |
-| `CORS_ORIGIN` | `http://localhost:5000`               | Allowed origin for Flask UI                      |
+| `CORS_ORIGIN` | `http://localhost:80`               | Allowed origin for Flask UI                      |
 | `BASE_URL`    | `http://localhost:8001`               | Public base URL used when generating short links |
 
 ### Client (`client/.env`)

@@ -12,7 +12,7 @@ TEMPLATE = """
         body { font-family: Arial, sans-serif; margin: 50px; }
         input[type=text] { width: 300px; padding: 8px; }
         button { padding: 8px 16px; }
-        .response-box { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .response-box { margin-top: 10px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
     </style>
 </head>
 <body>
@@ -49,8 +49,6 @@ def index():
             response_text = f"Error: {e}"
 
     return render_template_string(TEMPLATE, response=response_text ,ip = requests.get("http://checkip.amazonaws.com").text)
-
-
 
 
 @app.route("/<shortId>")
