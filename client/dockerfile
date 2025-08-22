@@ -6,9 +6,6 @@ COPY . .
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install python-dotenv
-RUN apt-get -y update 
-RUN apt-get -y install curl
-RUN curl http://checkip.amazonaws.com >> .env
 
 EXPOSE 5000 
 
