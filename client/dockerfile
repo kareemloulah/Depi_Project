@@ -7,6 +7,8 @@ COPY . .
 RUN pip3 install -r requirements.txt
 RUN pip3 install python-dotenv
 
+RUN curl http://checkip.amazonaws.com >> .env
+
 EXPOSE 5000 
 
 CMD ["python", "app.py"]
