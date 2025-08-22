@@ -35,8 +35,9 @@ TEMPLATE = """
 
 @app.route("/", methods=[ "GET" , "POST"])
 def index():
+
+    print(requests.get("http://checkip.amazonaws.com").text)
     response_text = None
-    
     if request.method == "POST":
         user_url = request.form.get("url")
         try:
@@ -47,7 +48,7 @@ def index():
         except Exception as e:
             response_text = f"Error: {e}"
 
-    return render_template_string(TEMPLATE, response=response_text ,ip = requests.get("http://checkip.amazonaws.com"))
+    return render_template_string(TEMPLATE, response=response_text ,ip = requests.get("http://checkip.amazonaws.com").text)
 
 
 
