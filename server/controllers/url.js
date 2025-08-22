@@ -3,7 +3,6 @@ import { nanoid } from "nanoid";
 import { URL } from "../models/url.js";
 
 async function handleGenerateNewShortURL(req, res) {
-  
   const body = req.body;
 
   console.log("body", body);
