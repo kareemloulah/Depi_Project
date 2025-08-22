@@ -33,7 +33,7 @@ TEMPLATE = """
 """
 
 
-@app.route("/", methods=["POST"])
+@app.route("/", methods=[ "GET" , "POST"])
 def index():
     response_text = None
     if request.method == "POST":
