@@ -1,6 +1,7 @@
 from flask import Flask, render_template_string, request , redirect
 import requests
 import os
+import socket
 app = Flask(__name__)
 
 TEMPLATE = """
@@ -125,7 +126,7 @@ TEMPLATE = """
         {% if response %}
         <div class="response-box">
             <strong>Response:</strong>
-            <pre>http://{{ ip }}/{{ response }}</pre>
+            <pre>https://{{ ip }}/{{ response }}</pre>
             <p><a href="/{{ response }}">Shortened Link</a></p>
             <p>Here is the analytics link: <a href="/analytics/{{ response }}">Analytics</a></p>
         </div>
@@ -272,17 +273,21 @@ def go(shortId):
 @app.route("/analytics/<shortId>")
 def Analytics(shortId):
     try:
-        resp = requests.get(f"{os.environ.get("API_GET_URL")}/{shortId}")
+        resp = requests.get(f"{os.environ.get("API_GET_ANALYTICS")}/{shortId}")
         resp.raise_for_status() 
         resp=resp.json()
+        print(resp)
         NumberOfVisits = len(resp.get('visitHistory'))
-        if NumberOfVisits:
-            return render_template_string(analytics, NumberOfVisits=NumberOfVisits)
+        if resp:
+            if NumberOfVisits:
+                return render_template_string(analytics, NumberOfVisits=NumberOfVisits)
+            else:
+                return render_template_string(analytics, NumberOfVisits="0")
         else:
-            return "URL not found", 404
+            return render_template_string(analytics, NumberOfVisits="URL not found" ) , 404
     except Exception as e:
-        return f"Error: {e}", 50
+        return f"Error: {e}", 500
 
 
 if __name__ == "__main__":
-    app.run(ssl_context='adhoc',host='0.0.0.0', port=443 , debug=True)
+    app.run(ssl_context='adhoc',host='0.0.0.0', port=443)
