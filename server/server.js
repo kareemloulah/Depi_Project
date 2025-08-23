@@ -39,7 +39,21 @@ app.get("/:shortId", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+app.get("/analytics/:shortId", async (req, res) => {
+  try {
+    const shortId = req.params.shortId;
+    const entry = await URL.findOne(
+      { shortId },
+    );
+    if (!entry) {
+      return res.status(404).send("Short URL not found");
+    }
+    res.json(entry);
+  } catch (error) {
+    console.error("Error handling redirect:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
