@@ -1,5 +1,6 @@
 ---
 services:
+
   server:
     build:
       context: ./server
@@ -11,6 +12,7 @@ services:
       - "8001:8001" 
     networks:
       - url-shortener
+    restart: unless-stopped
   client:
     build:
       context: ./client
@@ -22,6 +24,7 @@ services:
       - "443:443" 
     networks:
       - url-shortener
+    restart: unless-stopped
   mongodb:
     hostname: mongodb
     image: mongodb/mongodb-atlas-local
@@ -35,6 +38,7 @@ services:
       - config:/data/configdb
     networks:
       - url-shortener
+    restart: unless-stopped
 volumes:
   data:
   config:
