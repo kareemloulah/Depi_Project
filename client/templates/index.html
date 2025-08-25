@@ -122,8 +122,7 @@
         {% if response %}
         <div class="response-box">
             <strong>Response:</strong>
-            <pre>https://{{ ip }}/{{ response }}</pre>
-            <p><a href="/{{ response }}">Shortened Link</a></p>
+            <p><a href="http://{{ dns }}/{{ response }}">http://{{ dns }}/{{ response }}</a></p>
             <p>Here is the analytics link: <a href="/analytics/{{ response }}">Analytics</a></p>
         </div>
         {% endif %}
