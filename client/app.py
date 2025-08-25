@@ -54,11 +54,11 @@ def Analytics(shortId):
         NumberOfVisits = len(resp.get('visitHistory'))
         if resp:
             if NumberOfVisits:
-                return render_template_string(analytics, NumberOfVisits=NumberOfVisits)
+                return render_template("analytics.html", NumberOfVisits=NumberOfVisits)
             else:
-                return render_template_string(analytics, NumberOfVisits="0")
+                return render_template("analytics.html", NumberOfVisits="0")
         else:
-            return render_template("analytics", NumberOfVisits="URL not found" ) , 404
+            return render_template("analytics.html", NumberOfVisits="URL not found" ) , 404
     except Exception as e:
         return f"Error: {e}", 500
 
