@@ -1,31 +1,55 @@
 from flask import Flask, render_template_string, request , redirect ,render_template
 import requests
 import os
+from urllib.parse import urlparse 
 
 app = Flask(__name__)
+
+def _normalize_and_validate_url(raw_url: str):
+    """
+    Normalize (add http:// if scheme missing) and validate that URL has http/https
+    and a network location (netloc). Returns normalized URL string or None if invalid.
+    """
+    if not raw_url:
+        return None
+    raw_url = raw_url.strip()
+    # If user omitted scheme, assume http
+    if "://" not in raw_url:
+        candidate = "http://" + raw_url
+    else:
+        candidate = raw_url
+    parsed = urlparse(candidate)
+    if parsed.scheme in ("http", "https") and parsed.netloc:
+        return candidate
+    return None
 
 @app.route("/", methods=[ "GET" , "POST"])
 def index():
     response_text = None
+
+    # getting the instance public DNS
     token_url = "http://169.254.169.254/latest/api/token"
     headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
     token = requests.put(token_url, headers=headers, timeout=2).text
-
-    # Step 2: Query metadata with the token
     metadata_url = f"http://169.254.169.254/latest/meta-data/public-hostname"
     headers = {"X-aws-ec2-metadata-token": token}
     DNS = requests.get(metadata_url, headers=headers, timeout=2)
+
     if request.method == "POST":
         user_url = request.form.get("url")
-        try:
-            resp = requests.post(os.environ.get("API_POST_URL"), json={"url": user_url})
-            resp.raise_for_status()
-            data = resp.json()              
-            response_text = data.get('id') 
-        except Exception as e:
-            response_text = f"Error: {e}"
+        normalized = _normalize_and_validate_url(user_url)
+        if not normalized:
+            response_text = "Invalid URL. Please provide a valid http:// or https:// address."
+        else:
+            try:
+                resp = requests.post(os.environ.get("API_POST_URL"), json={"url": normalized})
+                resp.raise_for_status()
+                data = resp.json()              
+                response_text = data.get('id') 
+            except Exception as e:
+                response_text = f"Error: {e}"
 
-    return render_template("index.html", response=response_text ,ip = DNS.text)
+    return render_template("index.html", response=response_text ,dns = DNS.text)
 
 
 
@@ -64,4 +88,6 @@ def Analytics(shortId):
 
 
 if __name__ == "__main__":
-    app.run(ssl_context='adhoc',host='0.0.0.0', port=443)
+    app.run(host='0.0.0.0', port=80)
+
+
