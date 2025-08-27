@@ -3,3 +3,4 @@ requests
 pyopenssl
 python-dotenv
 flake8
+pytest
