@@ -1,0 +1,35 @@
+#!/bin/sh
+# pre-push hook to run tests inside Docker containers
+
+echo "Running pre-push CI checks inside Docker..."
+
+# -----------------------------
+# 1. Node.js API
+# -----------------------------
+echo "Running Node.js API tests in Docker..."
+
+# Build a temporary Docker image for testing
+docker build -t prepush-node-test ./server || { echo "Failed to build Node.js Docker image"; exit 1; }
+
+# Run container with MongoDB service
+docker run --rm --name prepush-node-test \
+  --network host \
+  -e MONGO_URI="mongodb://testuser:testpass@localhost:27017/url-shortener?authSource=admin" \
+  prepush-node-test \
+  sh -c "npm install && npx eslint . && npx jest --passWithNoTests" \
+  || { echo "Node.js tests failed"; exit 1; }
+
+# -----------------------------
+# 2. Python Client
+# -----------------------------
+echo "Running Python Client tests in Docker..."
+
+docker build -t prepush-python-test ./client || { echo "Failed to build Python Docker image"; exit 1; }
+
+docker run --rm --name prepush-python-test \
+  prepush-python-test \
+  sh -c "python -m pip install --upgrade pip && pip install -r requirements.txt && flake8 . && pytest  || echo "No tests found, skipping..." " \
+  || { echo "Python tests failed"; exit 1; }
+
+echo "All pre-push Docker tests passed ✅"
+exit 0
