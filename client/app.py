@@ -13,6 +13,7 @@ def _normalize_and_validate_url(raw_url: str):
     and a network location (netloc).
     Returns normalized URL string or None if invalid.
     """
+
     if not raw_url:
         return None
     raw_url = raw_url.strip()
@@ -80,7 +81,7 @@ def go(shortId):
         data = resp.json()
         redirect_url = data.get("redirectUrl")
         if redirect_url:
-            return redirect(redirect_url, code=302)
+            return redirect(redirect_url, code=200)
         else:
             return "URL not found", 404
     except Exception as e:
