@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { connectDB } from "./connect.js";
 import { urlRoute } from "./routes/url.js";
 import { URL } from "./models/url.js";
@@ -9,6 +10,20 @@ import { URL } from "./models/url.js";
 */
 const app = express();
 const PORT = process.env.PORT;
+
+// Configure CORS:
+// - By default allows all origins: app.use(cors())
+// - To restrict, set ALLOWED_ORIGINS as a comma-separated env var
+
+app.use(
+  cors(
+    {
+      origin: "*",   // or "*" for testing
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"]
+    }
+  )
+);
 
 /*
   Connect to MongoDB using the helper connectDB function.
