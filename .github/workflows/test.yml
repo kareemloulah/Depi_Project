@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+    
+      contents: write
       packages: read
       # To report GitHub Actions status checks
       statuses: write
@@ -35,3 +36,6 @@ jobs:
           VALIDATE_ALL_CODEBASE: false # Disable all other linters
           VALIDATE_PYTHON_BLACK: true
           VALIDATE_TRYIVY: true
+          VALIDATE_JAVASCRIPT_PRETTIER: true
+          VALIDATE_HTML_PRETTIER: true
+          VALIDATE_HTML: true
