@@ -1,92 +1,94 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>URL Analytics</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f6f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f6f9;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-        .container {
-            background: #fff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-        }
+      .container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+      }
 
-        h1 {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
+      h1 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+      }
 
-        h2 {
-            font-size: 3rem;
-            color: #3498db;
-            margin: 10px 0;
-        }
+      h2 {
+        font-size: 3rem;
+        color: #3498db;
+        margin: 10px 0;
+      }
 
-        input[type=text] {
-            width: 80%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-top: 15px;
-            outline: none;
-            transition: 0.3s;
-        }
+      input[type="text"] {
+        width: 80%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin-top: 15px;
+        outline: none;
+        transition: 0.3s;
+      }
 
-        input[type=text]:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-        }
+      input[type="text"]:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+      }
 
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s ease;
-        }
+      button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s ease;
+      }
 
-        button:hover {
-            background: #2980b9;
-        }
+      button:hover {
+        background: #2980b9;
+      }
 
-        .response-box {
-            margin-top: 20px;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background: #ecf5ff;
-            font-size: 0.95rem;
-            color: #2c3e50;
-        }
+      .response-box {
+        margin-top: 20px;
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #ecf5ff;
+        font-size: 0.95rem;
+        color: #2c3e50;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h1>Number of Link Visits</h1>
-        <h2>{{ NumberOfVisits }}</h2>
+      <h1>Number of Link Visits</h1>
+      <h2>{{ NumberOfVisits }}</h2>
     </div>
-</body>
-
+  </body>
 </html>
