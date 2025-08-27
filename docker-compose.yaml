@@ -67,12 +67,33 @@ services:
       - "443:443"
     restart: unless-stopped
 
+  ######################
+  # Prometheus service #
+  ######################
+  prometheus:
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - --web.external-url=https://so8ayar.duckdns.org/prometheus/
+    expose:
+      - "9090"
+    networks:
+      - url-shortener
+    restart: unless-stopped
+
 ##########################
 ## Volumes and Networks ##
 ##########################
 volumes:
   data:
   config:
+  prometheus-data:
 
 networks:
   url-shortener:
