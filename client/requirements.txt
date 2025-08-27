@@ -2,5 +2,5 @@ Flask
 requests
 pyopenssl
 python-dotenv
-flake8
-pytest
+prometheus_flask_exporter
+prometheus_client
