@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - TEST_TESTING
+      - main
 
 jobs:
   # ---------------------------
