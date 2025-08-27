@@ -1,44 +1,79 @@
 ---
 services:
+  ####################
+  # Backend  service #
+  ####################
   server:
     build:
       context: ./server
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: server
     depends_on:
       - mongodb
-    ports:
-      - "8001:8001" 
+    expose:
+      - "8001"
     networks:
       - url-shortener
+    restart: unless-stopped
+
+  ##################
+  # Client service #
+  ##################
   client:
     build:
       context: ./client
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: client
     depends_on:
       - mongodb
-    ports:
-      - "443:443" 
+    expose:
+      - "80"
     networks:
       - url-shortener
+    restart: unless-stopped
+
+  ####################
+  # DataBase service #
+  ####################
   mongodb:
     hostname: mongodb
     image: mongodb/mongodb-atlas-local
     environment:
       - MONGODB_INITDB_ROOT_USERNAME=kaap
       - MONGODB_INITDB_ROOT_PASSWORD=kaap
-    ports:
-      - 27017:27017
+    expose:
+      - "27017"
     volumes:
       - data:/data/db
       - config:/data/configdb
     networks:
       - url-shortener
+    restart: unless-stopped
+
+  #################
+  # Nginx service #
+  #################
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    depends_on:
+      - client
+    networks:
+      - url-shortener
+    ports:
+      - "80:80"
+      - "443:80"
+    restart: unless-stopped
+
+##########################
+## Volumes and Networks ##
+##########################
 volumes:
   data:
   config:
+
 networks:
   url-shortener:
     driver: bridge
-
