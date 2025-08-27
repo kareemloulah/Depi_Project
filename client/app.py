@@ -1,8 +1,7 @@
 from flask import Flask, request, redirect, render_template
 import requests
 import os
-
-from urllib.parse import urlparse 
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
@@ -26,8 +25,7 @@ def _normalize_and_validate_url(raw_url: str):
     return None
 
 
-
-@app.route("/", methods=[ "GET" , "POST"])
+@app.route("/", methods=["GET", "POST"])
 def index():
     response_text = None
 
@@ -50,30 +48,25 @@ def index():
             try:
                 resp = requests.post(
                     os.environ.get("API_POST_URL"), json={"url": normalized}
-                    )
+                )
                 resp.raise_for_status()
 
-
-                data = resp.json()              
-                response_text = data.get('id') 
+                data = resp.json()
+                response_text = data.get("id")
             except Exception as e:
                 response_text = f"Error: {e}"
 
-
-
-    return render_template("index.html", response=response_text ,dns = DNS.text)
-
+    return render_template("index.html", response=response_text, dns=DNS.text)
 
 
 @app.route("/<shortId>")
 def go(shortId):
     try:
-        resp = requests.get(f"{os.environ.get("API_GET_URL")}/{shortId}")
+        resp = requests.get(f"{os.environ.get('API_GET_URL')}/{shortId}")
         resp.raise_for_status()
 
-
-        data = resp.json()  
-        redirect_url = data.get('redirectUrl')  
+        data = resp.json()
+        redirect_url = data.get("redirectUrl")
         if redirect_url:
             return redirect(redirect_url, code=302)
         else:
@@ -85,31 +78,23 @@ def go(shortId):
 @app.route("/analytics/<shortId>")
 def Analytics(shortId):
     try:
-        resp = requests.get(f"{os.environ.get("API_GET_ANALYTICS")}/{shortId}")
-        resp.raise_for_status() 
+        resp = requests.get(f"{os.environ.get('API_GET_ANALYTICS')}/{shortId}")
+        resp.raise_for_status()
 
-
-        resp=resp.json()
+        resp = resp.json()
         print(resp)
 
-        NumberOfVisits = len(resp.get('visitHistory'))
+        NumberOfVisits = len(resp.get("visitHistory"))
         if resp:
             if NumberOfVisits:
                 return render_template("analytics.html", NumberOfVisits=NumberOfVisits)
             else:
                 return render_template("analytics.html", NumberOfVisits="0")
         else:
-            return render_template(
-                "analytics.html", NumberOfVisits="URL not found"
-                ) , 404
+            return render_template("analytics.html", NumberOfVisits="URL not found"), 404
     except Exception as e:
         return f"Error: {e}", 500
 
 
 if __name__ == "__main__":
-
-
-    
-    app.run(host='0.0.0.0', port=80)
-
-
+    app.run(host="0.0.0.0", port=80)
