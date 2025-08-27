@@ -1,3 +1,11 @@
+```
+# copies the pre push script to the hooks dir
+cp pre-push .git/hooks/ 
+# makes so that the scrips is executable on git push
+git add --chmod=+x .\.git\hooks\pre-push
+
+```
+
 # Depi_Project
 
 A small monorepo that demonstrates a simple URL shortener with:
