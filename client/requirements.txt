@@ -2,3 +2,4 @@ Flask
 requests
 pyopenssl
 python-dotenv
+flake8
