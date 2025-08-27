@@ -81,14 +81,11 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-client:latest
 
       # -------- Deploy to EC2 --------
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.EC2_USER }}/Depi_Project
-            git pull origin main
-            docker-compose pull
-            docker-compose up -d --remove-orphans
+      - name: Deploy to EC2 via SSM
+        run: |
+          aws ssm send-command \
+          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy new app" \
+          --parameters 'commands=["cd ~/home/${{ secrets.EC2_USERNAME }}/app/Depi_Project && git pull && docker-compose up -d"]'
+
