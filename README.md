@@ -65,6 +65,15 @@ Depi_Project/
 
 ---
 
+## CI/CD Flow
+
+![CI/CD Flow](/CI_CD.png)
+
+---
+
+
+---
+
 ## Tech Stack
 
 - **Client:** Python 3, Flask, Jinja, Requests
