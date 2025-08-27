@@ -5,8 +5,6 @@ WORKDIR /app
 COPY . .
 
 RUN pip3 install -r requirements.txt
-RUN pip3 install python-dotenv
-RUN pip install pyopenssl
 
 EXPOSE 80 
 
