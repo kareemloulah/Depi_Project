@@ -8,4 +8,6 @@ RUN npm install
 
 EXPOSE 8001
 
+RUN npm run eslint
+
 CMD ["npm", "start"]
