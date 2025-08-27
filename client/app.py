@@ -27,6 +27,11 @@ def _normalize_and_validate_url(raw_url: str):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """
+    Render the home page.
+    - GET: Shows the form
+    - POST: Validates user URL and sends it to the API
+    """
     response_text = None
 
     # getting the instance public DNS
@@ -35,7 +40,7 @@ def index():
     token = requests.put(token_url, headers=headers, timeout=2).text
     metadata_url = f"http://169.254.169.254/latest/meta-data/public-hostname"
     headers = {"X-aws-ec2-metadata-token": token}
-    DNS = requests.get(metadata_url, headers=headers, timeout=2)
+    Dns = requests.get(metadata_url, headers=headers, timeout=2)
 
     if request.method == "POST":
         user_url = request.form.get("url")
@@ -53,14 +58,18 @@ def index():
 
                 data = resp.json()
                 response_text = data.get("id")
-            except Exception as e:
-                response_text = f"Error: {e}"
+            except Exception as exception:
+                response_text = f"Error: {exception}"
 
-    return render_template("index.html", response=response_text, dns=DNS.text)
+    return render_template("index.html", response=response_text, dns=Dns.text)
 
 
 @app.route("/<shortId>")
 def go(shortId):
+    """
+    Redirect to the original URL given its shortId.
+    Returns 404 if not found.
+    """
     try:
         resp = requests.get(f"{os.environ.get('API_GET_URL')}/{shortId}")
         resp.raise_for_status()
@@ -77,6 +86,10 @@ def go(shortId):
 
 @app.route("/analytics/<shortId>")
 def Analytics(shortId):
+    """
+    Show analytics for a given shortId (number of visits).
+    Returns 404 if the URL does not exist.
+    """
     try:
         resp = requests.get(f"{os.environ.get('API_GET_ANALYTICS')}/{shortId}")
         resp.raise_for_status()
@@ -91,10 +104,14 @@ def Analytics(shortId):
             else:
                 return render_template("analytics.html", NumberOfVisits="0")
         else:
-            return render_template("analytics.html", NumberOfVisits="URL not found"), 404
+            return (
+                render_template("analytics.html", NumberOfVisits="URL not found"),
+                404,
+            )
     except Exception as e:
         return f"Error: {e}", 500
 
 
 if __name__ == "__main__":
+
     app.run(host="0.0.0.0", port=80)
