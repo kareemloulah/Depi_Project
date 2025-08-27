@@ -4,9 +4,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip3 install -r requirements.txt
-RUN pip3 install python-dotenv
-RUN pip install pyopenssl
-EXPOSE 443 
+RUN pip3 install -r requirements.txt --no-cache-dir
+
+EXPOSE 80 
 
 CMD ["python", "app.py"]
