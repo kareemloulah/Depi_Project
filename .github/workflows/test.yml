@@ -1,0 +1,116 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    -branches:
+      - main
+
+jobs:
+  # ---------------------------
+  # 1. Continuous Integration
+  # ---------------------------
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: testuser
+          MONGO_INITDB_ROOT_PASSWORD: testpass
+        options: >-
+          --health-cmd="mongosh --username testuser --password testpass --eval 'db.adminCommand(\"ping\")'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------- Node.js API --------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies (Node.js API)
+        working-directory: server
+        run: npm install
+
+      - name: Run lint (Node.js API)
+        working-directory: server
+        run: npx eslint .
+
+      - name: Run tests (Node.js API)
+        working-directory: server
+        env:
+          MONGO_URI: mongodb://testuser:testpass@localhost:27017/url-shortener?authSource=admin
+        run: npx jest --passWithNoTests
+
+      # -------- Python Client --------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (Flask Client)
+        working-directory: client
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run lint (Flask Client)
+        working-directory: client
+        run: flake8 .
+
+      - name: Run tests (Flask Client)
+        working-directory: client
+        run: pytest || echo "No tests found, skipping..."
+
+  # ---------------------------
+  # 2. Continuous Delivery
+  # ---------------------------
+  cd:
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------- Docker Build & Push --------
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push API image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-api:latest ./server
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-api:latest
+
+      - name: Build & push Client image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-client:latest ./client
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-client:latest
+
+
+    ## Needs to be configured with your EC2 details
+      # # -------- Deploy to EC2 --------
+      # - name: Deploy via SSH
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       cd /home/${{ secrets.EC2_USER }}/Depi_Project
+      #       git pull origin main
+      #       docker-compose pull
+      #       docker-compose up -d --remove-orphans

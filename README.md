@@ -1,3 +1,11 @@
+```
+# copies the pre push script to the hooks dir
+cp pre-push .git/hooks/ 
+# makes so that the scrips is executable on git push
+git add --chmod=+x .\.git\hooks\pre-push
+
+```
+
 # Depi_Project
 
 A small monorepo that demonstrates a simple URL shortener with:
@@ -29,19 +37,7 @@ A small monorepo that demonstrates a simple URL shortener with:
 
 ## Architecture
 
-```
-+-----------+        GET/POST        +--------------------+        MongoDB
-|  Browser  |  <------------------>  |  Flask Client (UI) |  --->  (database)
-+-----------+                         +---------+----------+         |
-                                           | REST calls               |
-                                           v                          |
-                                      +----+--------------------------+
-                                      |  Node.js/Express API Server   |
-                                      +--------------------------------+
-                                             ^
-                                             | Redirects (GET /:shortId)
-                                             +---- Tracks visitHistory
-```
+![Architecture](/Architecture.png)
 
 - The **Flask client** calls the **Node API** to create short URLs, then redirects the user to the `shortId` link.
 - The **API** handles: create short URL, redirect by `shortId`, and basic analytics (visit counts).
@@ -74,6 +70,15 @@ Depi_Project/
 ```
 
 > If names differ, adjust the references accordingly.
+
+---
+
+## CI/CD Flow
+
+![CI/CD Flow](/CI_CD.png)
+## test pre push 2
+---
+
 
 ---
 
