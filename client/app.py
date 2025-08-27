@@ -52,8 +52,7 @@ def index():
         else:
             try:
                 resp = requests.post(
-                    os.environ.get("API_POST_URL"), 
-                    json={"url": normalized}
+                    os.environ.get("API_POST_URL"), json={"url": normalized}
                 )
                 resp.raise_for_status()
 
