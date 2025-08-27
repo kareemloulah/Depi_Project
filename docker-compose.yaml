@@ -1,9 +1,8 @@
 ---
 services:
-
-####################
-# Backend  service #
-####################
+  ####################
+  # Backend  service #
+  ####################
   server:
     build:
       context: ./server
@@ -17,9 +16,9 @@ services:
       - url-shortener
     restart: unless-stopped
 
-##################
-# Client service #
-##################
+  ##################
+  # Client service #
+  ##################
   client:
     build:
       context: ./client
@@ -33,9 +32,9 @@ services:
       - url-shortener
     restart: unless-stopped
 
-####################
-# DataBase service #
-####################
+  ####################
+  # DataBase service #
+  ####################
   mongodb:
     hostname: mongodb
     image: mongodb/mongodb-atlas-local
@@ -51,9 +50,9 @@ services:
       - url-shortener
     restart: unless-stopped
 
-#################    
-# Nginx service #
-#################
+  #################
+  # Nginx service #
+  #################
   nginx:
     build:
       context: ./nginx
@@ -74,7 +73,7 @@ services:
 volumes:
   data:
   config:
+
 networks:
   url-shortener:
     driver: bridge
-
