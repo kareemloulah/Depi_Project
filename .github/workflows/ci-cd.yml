@@ -86,7 +86,7 @@ jobs:
           aws ssm send-command \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --document-name "AWS-RunShellScript" \
+          --region eu-west-2 \
           --comment "Deploy new app" \
-          --region us-east-1 \ 
           --parameters 'commands=["cd ~/home/${{ secrets.EC2_USERNAME }}/app/Depi_Project && git pull && docker-compose up -d"]'
 
