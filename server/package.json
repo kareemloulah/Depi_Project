@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon --env-file=.env server.js "
+    "start": "nodemon --env-file=.env server.js",
+    "eslint": "eslint . --ext .js"
   },
   "keywords": [],
   "author": "",
