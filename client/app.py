@@ -1,9 +1,33 @@
-from flask import Flask, request, redirect, render_template
-import requests
 import os
 from urllib.parse import urlparse
+from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
+from prometheus_client import Counter
+
+import requests
+from flask import Flask, redirect, render_template, request
 
 app = Flask(__name__)
+
+endpoints = ['/','/analytics/<shortId>','/<shortId>']
+metrics = PrometheusMetrics(app, group_by_endpoint=True,
+                             path_prefix='url_shortener_',
+                             buckets=(0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10),
+                             default_labels={'app_name': 'url_shortener'},
+                             excluded_endpoints=[])
+
+
+
+short_urls_created = Counter(
+    'url_shortener_created_total',
+    'Number of short URLs created',
+    ['app_name']
+)
+short_urls_redirected = Counter(
+    'url_shortener_redirects_total',
+    'Number of redirects served',
+    ['app_name']
+)
 
 
 def _normalize_and_validate_url(raw_url: str):
@@ -28,7 +52,7 @@ def _normalize_and_validate_url(raw_url: str):
     return None
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET","POST"])
 def index():
     """
     Render the home page.
@@ -62,10 +86,11 @@ def index():
 
                 data = resp.json()
                 response_text = data.get("id")
+                short_urls_created.labels(app_name="url_shortener").inc()
             except Exception as exception:
                 response_text = f"Error: {exception}"
 
-    return render_template("index.html", response=response_text, dns=Dns.text)
+    return (render_template("index.html", response=response_text, dns=Dns.text), {"status": "ok"})
 
 
 @app.route("/<shortId>")
@@ -81,7 +106,8 @@ def go(shortId):
         data = resp.json()
         redirect_url = data.get("redirectUrl")
         if redirect_url:
-            return redirect(redirect_url, code=200)
+            short_urls_redirected.labels(app_name="url_shortener").inc()
+            return redirect(redirect_url, code=302)
         else:
             return "URL not found", 404
     except Exception as e:
@@ -123,5 +149,5 @@ def Analytics(shortId):
 
 
 if __name__ == "__main__":
-
+    
     app.run(host="client", port=80)

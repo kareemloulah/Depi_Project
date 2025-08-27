@@ -39,7 +39,7 @@ async function handleGenerateNewShortURL(req, res) {
   }
 
   // Generate a short ID (8 characters) to use as the short URL key
-  const shortID = nanoid(8);
+  const shortID = nanoid(9);
 
   // Persist the new short URL document to the database.
   // visitHistory starts empty and will be populated when the short URL is visited.
