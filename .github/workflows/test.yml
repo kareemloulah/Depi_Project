@@ -30,3 +30,8 @@ jobs:
         env:
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          VALIDATE_PYTHON: true
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_ALL_CODEBASE: false # Disable all other linters
+          VALIDATE_PYTHON_BLACK: true
+          VALIDATE_TRYIVY: true
