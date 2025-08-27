@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 def _normalize_and_validate_url(raw_url: str):
     """
-    Normalize (add http:// if scheme missing) and 
+    Normalize (add http:// if scheme missing) and
     validate that URL has http/https
     and a network location (netloc).
     Returns normalized URL string or None if invalid.
@@ -49,7 +49,8 @@ def index():
         normalized = _normalize_and_validate_url(user_url)
         if not normalized:
             response_text = (
-                "Invalid URL. Please provide a valid http:// or https:// address."
+                "Invalid URL. Please provide "
+                "a valid http:// or https:// address."
             )
         else:
             try:
