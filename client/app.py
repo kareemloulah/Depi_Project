@@ -8,8 +8,10 @@ app = Flask(__name__)
 
 def _normalize_and_validate_url(raw_url: str):
     """
-    Normalize (add http:// if scheme missing) and validate that URL has http/https
-    and a network location (netloc). Returns normalized URL string or None if invalid.
+    Normalize (add http:// if scheme missing) and 
+    validate that URL has http/https
+    and a network location (netloc).
+    Returns normalized URL string or None if invalid.
     """
     if not raw_url:
         return None
@@ -38,7 +40,7 @@ def index():
     token_url = "http://169.254.169.254/latest/api/token"
     headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
     token = requests.put(token_url, headers=headers, timeout=2).text
-    metadata_url = f"http://169.254.169.254/latest/meta-data/public-hostname"
+    metadata_url = "http://169.254.169.254/latest/meta-data/public-hostname"
     headers = {"X-aws-ec2-metadata-token": token}
     Dns = requests.get(metadata_url, headers=headers, timeout=2)
 
@@ -100,12 +102,18 @@ def Analytics(shortId):
         NumberOfVisits = len(resp.get("visitHistory"))
         if resp:
             if NumberOfVisits:
-                return render_template("analytics.html", NumberOfVisits=NumberOfVisits)
+                return render_template(
+                    "analytics.html",
+                    NumberOfVisits=NumberOfVisits)
             else:
-                return render_template("analytics.html", NumberOfVisits="0")
+                return render_template(
+                    "analytics.html",
+                    NumberOfVisits="0")
         else:
             return (
-                render_template("analytics.html", NumberOfVisits="URL not found"),
+                render_template(
+                    "analytics.html",
+                    NumberOfVisits="URL not found"),
                 404,
             )
     except Exception as e:
