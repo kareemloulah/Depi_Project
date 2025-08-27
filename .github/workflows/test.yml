@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-    
+
       contents: write
       packages: read
       # To report GitHub Actions status checks
@@ -31,11 +31,3 @@ jobs:
         env:
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          VALIDATE_PYTHON: true
-          VALIDATE_JAVASCRIPT_ES: true
-          VALIDATE_ALL_CODEBASE: false # Disable all other linters
-          VALIDATE_PYTHON_BLACK: true
-          VALIDATE_TRYIVY: true
-          VALIDATE_JAVASCRIPT_PRETTIER: true
-          VALIDATE_HTML_PRETTIER: true
-          VALIDATE_HTML: true
