@@ -29,19 +29,7 @@ A small monorepo that demonstrates a simple URL shortener with:
 
 ## Architecture
 
-```
-+-----------+        GET/POST        +--------------------+        MongoDB
-|  Browser  |  <------------------>  |  Flask Client (UI) |  --->  (database)
-+-----------+                         +---------+----------+         |
-                                           | REST calls               |
-                                           v                          |
-                                      +----+--------------------------+
-                                      |  Node.js/Express API Server   |
-                                      +--------------------------------+
-                                             ^
-                                             | Redirects (GET /:shortId)
-                                             +---- Tracks visitHistory
-```
+![Architecture](/diagram-export-8-27-2025-6_14_39-PM.png)
 
 - The **Flask client** calls the **Node API** to create short URLs, then redirects the user to the `shortId` link.
 - The **API** handles: create short URL, redirect by `shortId`, and basic analytics (visit counts).
