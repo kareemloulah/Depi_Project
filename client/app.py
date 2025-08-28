@@ -9,7 +9,9 @@ from flask import Flask, redirect, render_template, request
 app = Flask(__name__)
 
 endpoints = ['/', '/analytics/<shortId>', '/<shortId>']
-metrics = PrometheusMetrics(app, group_by_endpoint=True,
+metrics = PrometheusMetrics(
+            app, 
+            group_by_endpoint=True,
             path_prefix='url_shortener_',
             buckets=(0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10),
             default_labels={'app_name': 'url_shortener'},
@@ -89,9 +91,9 @@ def index():
                 response_text = f"Error: {exception}"
 
     return (render_template(
-        "index.html", 
-        response=response_text, 
-        dns=Dns.text), 
+        "index.html",
+        response=response_text,
+        dns=Dns.text),
         200
         )
 
