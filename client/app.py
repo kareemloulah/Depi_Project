@@ -2,7 +2,7 @@ import os
 import time
 from urllib.parse import urlparse
 from prometheus_flask_exporter import PrometheusMetrics
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter
 
 import requests
 from flask import Flask, redirect, render_template, request
@@ -14,7 +14,7 @@ metrics = PrometheusMetrics(
             app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
-            buckets=(0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9),
+            buckets=(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
             default_labels={'app_name': 'url_shortener'},
             excluded_endpoints=[],
             )
