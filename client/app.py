@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 endpoints = ['/', '/analytics/<shortId>', '/<shortId>']
 metrics = PrometheusMetrics(
-            app, 
+            app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
             buckets=(0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10),
