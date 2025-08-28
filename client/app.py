@@ -1,5 +1,4 @@
 import os
-import time
 from urllib.parse import urlparse
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Counter
