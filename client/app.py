@@ -1,7 +1,8 @@
 import os
+import time
 from urllib.parse import urlparse
 from prometheus_flask_exporter import PrometheusMetrics
-from prometheus_client import Counter
+from prometheus_client import Counter, Histogram
 
 import requests
 from flask import Flask, redirect, render_template, request
@@ -13,19 +14,24 @@ metrics = PrometheusMetrics(
             app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
-            buckets=(0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10),
+            buckets=(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5,6,7,8,9,10),
             default_labels={'app_name': 'url_shortener'},
             excluded_endpoints=[],
             )
-
 
 short_urls_created = Counter(
     'url_shortener_created_total', 'Number of short URLs created',
     ['app_name']
 )
+
+short_urls_failed_redirects = Counter(
+    'url_shortener_failed_redirects', 'Number of short URLs created',
+    ['app_name']
+)
+
 short_urls_redirected = Counter(
     'url_shortener_redirects_total',
-    'Number of redirects served',
+    'Number of failed redirects',
     ['app_name']
 )
 
@@ -60,7 +66,6 @@ def index():
     - POST: Validates user URL and sends it to the API
     """
     response_text = None
-
     # getting the instance public DNS
     token_url = "http://169.254.169.254/latest/api/token"
     headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
@@ -89,7 +94,6 @@ def index():
                 short_urls_created.labels(app_name="url_shortener").inc()
             except Exception as exception:
                 response_text = f"Error: {exception}"
-
     return (render_template(
         "index.html",
         response=response_text,
@@ -114,8 +118,10 @@ def go(shortId):
             short_urls_redirected.labels(app_name="url_shortener").inc()
             return redirect(redirect_url, code=302)
         else:
+            short_urls_failed_redirects.labels(app_name="url_shortener").inc()
             return "URL not found", 404
     except Exception as e:
+        short_urls_failed_redirects.labels(app_name="url_shortener").inc()
         return f"Error: {e}", 500
 
 
