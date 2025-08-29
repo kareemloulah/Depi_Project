@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urlparse
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Counter
 
@@ -13,7 +12,7 @@ metrics = PrometheusMetrics(
             app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
-            buckets=(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+            buckets=(1, 2, 3, 5, 7, 10),
             default_labels={'app_name': 'url_shortener'},
             excluded_endpoints=[],
             )
@@ -34,29 +33,6 @@ short_urls_redirected = Counter(
     ['app_name']
 )
 
-
-def _normalize_and_validate_url(raw_url: str):
-    """
-    Normalize (add http:// if scheme missing) and
-    validate that URL has http/https
-    and a network location (netloc).
-    Returns normalized URL string or None if invalid.
-    """
-
-    if not raw_url:
-        return None
-    raw_url = raw_url.strip()
-    # If user omitted scheme, assume http
-    if "://" not in raw_url:
-        candidate = "http://" + raw_url
-    else:
-        candidate = raw_url
-    parsed = urlparse(candidate)
-    if parsed.scheme in ("http", "https") and parsed.netloc:
-        return candidate
-    return None
-
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     """
@@ -65,38 +41,27 @@ def index():
     - POST: Validates user URL and sends it to the API
     """
     response_text = None
-    # getting the instance public DNS
-    token_url = "http://169.254.169.254/latest/api/token"
-    headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
-    token = requests.put(token_url, headers=headers, timeout=2).text
-    metadata_url = "http://169.254.169.254/latest/meta-data/public-hostname"
-    headers = {"X-aws-ec2-metadata-token": token}
-    Dns = requests.get(metadata_url, headers=headers, timeout=2)
-
+    # preserves the real host From nginx will be localhost if ran Locally or public IP of server
+    host = request.headers.get("Host")
+    base_url = f"https://{host}"
+    
     if request.method == "POST":
         user_url = request.form.get("url")
-        normalized = _normalize_and_validate_url(user_url)
-        if not normalized:
-            response_text = (
-                "Invalid URL. Please provide "
-                "a valid http:// or https:// address."
+        try:
+            resp = requests.post(
+                os.environ.get("API_POST_URL"), json={"url": user_url}
             )
-        else:
-            try:
-                resp = requests.post(
-                    os.environ.get("API_POST_URL"), json={"url": normalized}
-                )
-                resp.raise_for_status()
+            resp.raise_for_status()
 
-                data = resp.json()
-                response_text = data.get("id")
-                short_urls_created.labels(app_name="url_shortener").inc()
-            except Exception as exception:
-                response_text = f"Error: {exception}"
+            data = resp.json()
+            response_text = data.get("id")
+            short_urls_created.labels(app_name="url_shortener").inc()
+        except Exception as exception:
+            response_text = f"Error: {exception}"
     return (render_template(
         "index.html",
         response=response_text,
-        dns=Dns.text),
+        base_url=base_url),
         200
         )
 
