@@ -33,6 +33,7 @@ short_urls_redirected = Counter(
     ['app_name']
 )
 
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     """
@@ -41,10 +42,11 @@ def index():
     - POST: Validates user URL and sends it to the API
     """
     response_text = None
-    # preserves the real host From nginx will be localhost if ran Locally or public IP of server
+    # preserves the real host From nginx
+    # will be localhost if ran Locally or public IP of server
     host = request.headers.get("Host")
     base_url = f"https://{host}"
-    
+
     if request.method == "POST":
         user_url = request.form.get("url")
         try:
