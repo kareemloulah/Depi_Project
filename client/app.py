@@ -12,7 +12,7 @@ metrics = PrometheusMetrics(
             app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
-            buckets=(1, 2, 3, 5, 7, 10),
+            buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5),
             default_labels={'app_name': 'url_shortener'},
             excluded_endpoints=[],
             )
@@ -88,7 +88,7 @@ def go(shortId):
             return "URL not found", 404
     except Exception as e:
         short_urls_failed_redirects.labels(app_name="url_shortener").inc()
-        return f"Error: {e}", 500
+        return f"Error: {e}", 404
 
 
 @app.route("/analytics/<shortId>")

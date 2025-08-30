@@ -71,21 +71,35 @@ services:
   # Prometheus service #
   ######################
   prometheus:
-    build:
-      context: ./prometheus
-      dockerfile: Dockerfile
+    image: prom/prometheus:v2.53.4
     container_name: prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus" 
-      - "--web.console.libraries=/etc/prometheus/console_libraries"
-      - "--web.console.templates=/etc/prometheus/consoles" 
-      - "--web.external-url=https://ec2-18-169-104-105.eu-west-2.compute.amazonaws.com/prometheus/"
+      - '--web.external-url=/prometheus/'
+      - '--web.route-prefix=/prometheus/'
     expose:
       - "9090"
+    networks:
+      - url-shortener
+    restart: unless-stopped
+
+  ######################
+  #  Grafana service   #
+  ######################
+  grafana:
+    image: grafana/grafana:main
+    container_name: grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    expose:
+      - "3000"
     networks:
       - url-shortener
     restart: unless-stopped
@@ -97,6 +111,7 @@ volumes:
   data:
   config:
   prometheus-data:
+  grafana-storage:
 
 networks:
   url-shortener:
