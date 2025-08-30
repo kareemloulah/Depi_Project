@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urlparse
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Counter
 
@@ -13,43 +12,26 @@ metrics = PrometheusMetrics(
             app,
             group_by_endpoint=True,
             path_prefix='url_shortener_',
-            buckets=(0.1, 0.3, 0.5, 0.7, 1, 1.5, 2, 3, 5, 7, 10),
+            buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5),
             default_labels={'app_name': 'url_shortener'},
             excluded_endpoints=[],
             )
-
 
 short_urls_created = Counter(
     'url_shortener_created_total', 'Number of short URLs created',
     ['app_name']
 )
-short_urls_redirected = Counter(
-    'url_shortener_redirects_total',
-    'Number of redirects served',
+
+short_urls_failed_redirects = Counter(
+    'url_shortener_failed_redirects', 'Number of short URLs created',
     ['app_name']
 )
 
-
-def _normalize_and_validate_url(raw_url: str):
-    """
-    Normalize (add http:// if scheme missing) and
-    validate that URL has http/https
-    and a network location (netloc).
-    Returns normalized URL string or None if invalid.
-    """
-
-    if not raw_url:
-        return None
-    raw_url = raw_url.strip()
-    # If user omitted scheme, assume http
-    if "://" not in raw_url:
-        candidate = "http://" + raw_url
-    else:
-        candidate = raw_url
-    parsed = urlparse(candidate)
-    if parsed.scheme in ("http", "https") and parsed.netloc:
-        return candidate
-    return None
+short_urls_redirected = Counter(
+    'url_shortener_redirects_total',
+    'Number of failed redirects',
+    ['app_name']
+)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -60,40 +42,28 @@ def index():
     - POST: Validates user URL and sends it to the API
     """
     response_text = None
-
-    # getting the instance public DNS
-    token_url = "http://169.254.169.254/latest/api/token"
-    headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
-    token = requests.put(token_url, headers=headers, timeout=2).text
-    metadata_url = "http://169.254.169.254/latest/meta-data/public-hostname"
-    headers = {"X-aws-ec2-metadata-token": token}
-    Dns = requests.get(metadata_url, headers=headers, timeout=2)
+    # preserves the real host From nginx
+    # will be localhost if ran Locally or public IP of server
+    host = request.headers.get("Host")
+    base_url = f"https://{host}"
 
     if request.method == "POST":
         user_url = request.form.get("url")
-        normalized = _normalize_and_validate_url(user_url)
-        if not normalized:
-            response_text = (
-                "Invalid URL. Please provide "
-                "a valid http:// or https:// address."
+        try:
+            resp = requests.post(
+                os.environ.get("API_POST_URL"), json={"url": user_url}
             )
-        else:
-            try:
-                resp = requests.post(
-                    os.environ.get("API_POST_URL"), json={"url": normalized}
-                )
-                resp.raise_for_status()
+            resp.raise_for_status()
 
-                data = resp.json()
-                response_text = data.get("id")
-                short_urls_created.labels(app_name="url_shortener").inc()
-            except Exception as exception:
-                response_text = f"Error: {exception}"
-
+            data = resp.json()
+            response_text = data.get("id")
+            short_urls_created.labels(app_name="url_shortener").inc()
+        except Exception as exception:
+            response_text = f"Error: {exception}"
     return (render_template(
         "index.html",
         response=response_text,
-        dns=Dns.text),
+        base_url=base_url),
         200
         )
 
@@ -114,9 +84,11 @@ def go(shortId):
             short_urls_redirected.labels(app_name="url_shortener").inc()
             return redirect(redirect_url, code=302)
         else:
+            short_urls_failed_redirects.labels(app_name="url_shortener").inc()
             return "URL not found", 404
     except Exception as e:
-        return f"Error: {e}", 500
+        short_urls_failed_redirects.labels(app_name="url_shortener").inc()
+        return f"Error: {e}", 404
 
 
 @app.route("/analytics/<shortId>")
@@ -135,18 +107,21 @@ def Analytics(shortId):
         NumberOfVisits = len(resp.get("visitHistory"))
         if resp:
             if NumberOfVisits:
-                return render_template(
-                    "analytics.html",
-                    NumberOfVisits=NumberOfVisits)
+                return (
+                    render_template
+                    ("analytics.html", NumberOfVisits=NumberOfVisits),
+                    200
+                    )
             else:
-                return render_template(
-                    "analytics.html",
-                    NumberOfVisits="0")
+                return (
+                    render_template
+                    ("analytics.html", NumberOfVisits="0"),
+                    200
+                  )
         else:
             return (
-                render_template(
-                    "analytics.html",
-                    NumberOfVisits="URL not found"),
+                render_template
+                ("analytics.html", NumberOfVisits="URL not found"),
                 404,
             )
     except Exception as e:
