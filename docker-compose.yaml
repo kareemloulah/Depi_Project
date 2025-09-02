@@ -105,6 +105,25 @@ services:
     restart: unless-stopped
 
 ##########################
+##    Node Exporter     ##
+##########################
+
+  node-exporter:
+    image: prom/node-exporter:v1.5.0
+    container_name: node-exporter
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    expose:
+      - "9100"
+    networks:
+      - url-shortener
+    restart: unless-stopped
+
+##########################
 ## Volumes and Networks ##
 ##########################
 volumes:
