@@ -1,268 +1,202 @@
-```
-# copies the pre push script to the hooks dir
-cp pre-push .git/hooks/ 
-# makes so that the scrips is executable on git push
-git add --chmod=+x .\.git\hooks\pre-push
+# URL Shortener
 
-```
+This repository implements a simple URL shortener with observability (Prometheus + Grafana) and an Nginx reverse-proxy. It contains:
 
-# Depi_Project
-
-A small monorepo that demonstrates a simple URL shortener with:
-
-- **Client (Flask)** – a minimal UI to submit a long URL and copy the generated short link.
-- **Server (Node.js/Express + MongoDB)** – REST API that creates short IDs, redirects, and tracks visit history.
-- **Database** – MongoDB instance (via Docker Compose) with a URL collection.
-
-> This README was written after inspecting the repo structure (folders: `client/`, `server/`, `database/`, `docker-compose.yaml`). If anything below differs from your code, tweak paths/names to match.
-
----
-
-## Table of Contents
-
-- [Architecture](#architecture)
-- [Monorepo Structure](#monorepo-structure)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Getting Started](#getting-started)
-
-  - [Option A — Run with Docker Compose](#option-a--run-with-docker-compose)
-  - [Option B — Run Locally (no Docker)](#option-b--run-locally-no-docker)
-
-- [Environment Variables](#environment-variables)
-- [API Reference](#api-reference)
-- [Data Model](#data-model)
+- API (Node.js / Express / MongoDB) — [server/server.js](server/server.js)  
+  - DB connection helper: [`connectDB`](server/connect.js) — [server/connect.js](server/connect.js)  
+  - Routes: [`urlRoute`](server/routes/url.js) — [server/routes/url.js](server/routes/url.js)  
+  - Controller: [`handleGenerateNewShortURL`](server/controllers/url.js) — [server/controllers/url.js](server/controllers/url.js)  
+  - Mongoose model: [`URL`](server/models/url.js) — [server/models/url.js](server/models/url.js)  
+  - Dockerfile: [server/Dockerfile](server/Dockerfile)  
+  - package.json: [server/package.json](server/package.json)
+- Frontend (Flask) — [client/app.py](client/app.py)  
+  - Flask endpoints: [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py) — see [client/app.py](client/app.py)  
+  - Dockerfile: [client/dockerfile](client/dockerfile)  
+  - requirements: [client/requirements.txt](client/requirements.txt)
+- Reverse proxy (Nginx) — [nginx/default.conf](nginx/default.conf), [nginx/nginx.conf](nginx/nginx.conf), [nginx/Dockerfile](nginx/Dockerfile) and TLS certs in [nginx/certs/](nginx/certs/)
+- Observability
+  - Prometheus config: [prometheus/prometheus.yml](prometheus/prometheus.yml)
+  - Grafana config: [grafana/grafana.ini](grafana/grafana.ini)
+- Orchestration: [docker-compose.yaml](docker-compose.yaml)
+- CI: GitHub Actions workflow: [.github/workflows/test.yml](.github/workflows/test.yml) and local pre-push hook: [pre-push](pre-push)
 
 ---
 
-## Architecture
+## High-level architecture
 
-![Architecture](/Architecture.png)
-
-- The **Flask client** calls the **Node API** to create short URLs, then redirects the user to the `shortId` link.
-- The **API** handles: create short URL, redirect by `shortId`, and basic analytics (visit counts).
-- **MongoDB** stores the mapping `{ shortId, redirectUrl, visitHistory[] }`.
-
----
-
-## Monorepo Structure
-
-```
-Depi_Project/
-├─ client/                 # Flask UI
-│  ├─ app.py               # Flask entrypoint (example name)
-│  ├─ templates/           # Jinja templates
-│  └─ static/              # CSS/JS assets
-│
-├─ server/                 # Node.js/Express API
-│  ├─ src/
-│  │  ├─ index.js          # Express app bootstrap
-│  │  ├─ routes/           # Routes (e.g., url.js)
-│  │  └─ models/           # Mongoose models (e.g., URL.js)
-│  ├─ package.json
-│  └─ .env.example         # Example server envs (add if missing)
-│
-├─ database/               # DB init/seed scripts (optional)
-│  └─ init.js              # Mongo init script (optional)
-│
-├─ docker-compose.yaml     # Orchestration for client, server, mongo
-└─ .gitignore              # (typo in repo: .gitigonre)
-```
-
-> If names differ, adjust the references accordingly.
+- The API exposes endpoints to create short URLs (POST /url) and to fetch redirect & analytics (GET /:shortId, GET /analytics/:shortId). See [server/server.js](server/server.js) and [`handleGenerateNewShortURL`](server/controllers/url.js).
+- The Flask client renders the UI and calls the API to create short URLs and to retrieve analytics. See [client/app.py](client/app.py).
+- Nginx serves as the public entrypoint (ports 80 and 443) and proxies:
+  - / -> Flask client
+  - /prometheus/ -> Prometheus
+  - /grafana/ -> Grafana  
+  See [nginx/default.conf](nginx/default.conf).
+- Prometheus scrapes the Flask client for metrics at /metrics (configured in [prometheus/prometheus.yml](prometheus/prometheus.yml)).
+- Grafana is configured for dashboards using [grafana/grafana.ini](grafana/grafana.ini).
 
 ---
 
-## CI/CD Flow
+## Important files & symbols (quick links)
 
-![CI/CD Flow](/CI_CD.png)
-## test pre push 2
----
-
-
----
-
-## Tech Stack
-
-- **Client:** Python 3, Flask, Jinja, Requests
-- **Server:** Node.js (18+), Express, Mongoose, NanoID/shortid (any ID lib), CORS
-- **Database:** MongoDB
-- **Infra/Dev:** Docker, Docker Compose
-
----
-
-## Features
-
-- Shorten a long URL into a compact `/:shortId`.
-- Redirect to the original URL via `GET /:shortId`.
-- Track clicks with `visitHistory` timestamps.
-- Minimal web UI to submit a URL and copy the short link.
-- Dockerized dev environment.
+- API entrypoint: [server/server.js](server/server.js)  
+- DB connector: [`connectDB`](server/connect.js) — [server/connect.js](server/connect.js)  
+- URL controller: [`handleGenerateNewShortURL`](server/controllers/url.js) — [server/controllers/url.js](server/controllers/url.js)  
+- Router: [`urlRoute`](server/routes/url.js) — [server/routes/url.js](server/routes/url.js)  
+- Mongoose model: [`URL`](server/models/url.js) — [server/models/url.js](server/models/url.js)  
+- Frontend app: [client/app.py](client/app.py) — functions: [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py)  
+- Compose orchestration: [docker-compose.yaml](docker-compose.yaml)  
+- Nginx config: [nginx/default.conf](nginx/default.conf)  
+- Prometheus config: [prometheus/prometheus.yml](prometheus/prometheus.yml)  
+- Grafana config: [grafana/grafana.ini](grafana/grafana.ini)  
+- CI: [.github/workflows/test.yml](.github/workflows/test.yml)  
+- Local pre-push: [pre-push](pre-push)
 
 ---
 
-## Getting Started
+## How it works (details)
 
-### Prerequisites
+1. Generation of short URL
+   - Frontend sends POST to API at /url with JSON { "url": "<target>" } (see [client/.env](client/.env) variables: `API_POST_URL`).
+   - Route handler: [server/routes/url.js](server/routes/url.js) mounts the controller.
+   - Controller [`handleGenerateNewShortURL`](server/controllers/url.js):
+     - Validates payload.
+     - Generates a nanoid short id.
+     - Saves a document to MongoDB using the Mongoose model [`URL`](server/models/url.js) with `visitHistory: []`.
+     - Returns JSON { id: shortId }.
 
-- **Docker & Docker Compose** (for Option A), or
-- **Node.js**, **Python 3.10+**, and **MongoDB** locally (for Option B).
+2. Redirection
+   - When a visitor requests GET /:shortId on the API, [server/server.js](server/server.js) does:
+     - findOneAndUpdate to push a visit record into visitHistory (timestamp).
+     - returns JSON { redirectUrl, shortId } so the client (Flask) can 302-redirect.
 
-### Option A — Run with Docker Compose
+3. Analytics
+   - GET /analytics/:shortId returns the `visitHistory` array and a computed `visitCount`. Implemented in [server/server.js](server/server.js).
 
-1. Copy env files (create them if missing):
-
-- **Server** (`server/.env`):
-
-```
-PORT=8001
-MONGO_URI=mongodb://kaap:kaap@mongodb/?directConnection=true
-
-```
-
-- **Client** (`client/.env` or config in `app.py`):
-
-```
-API_GET_URL=http://server:8001/
-API_POST_URL=http://server:8001/url
-
-```
-
-2. From the repo root:
-
-```bash
-docker compose up --build
-```
-
-3. Open the app:
-
-- UI: [http://localhost:80](http://localhost:80)
-- API: [http://localhost:8001](http://localhost:8001)
-- Mongo (container name `mongo`) listens on `27017` inside the network.
-
-To stop:
-
-```bash
-docker compose down
-```
-
-### Option B — Run Locally (no Docker)
-
-#### 1) Start MongoDB
-
-- Ensure a local Mongo is running on `mongodb://localhost:27017` (or update `MONGO_URI`).
-
-#### 2) Start the API server
-
-```bash
-cd server
-npm install
-# set envs in server/.env or export in shell
-npm run dev        # or: node src/index.js
-```
-
-Expects envs:
-
-```
-PORT=8001
-MONGO_URI=mongodb://localhost:27017/
-CORS_ORIGIN=http://localhost:80
-BASE_URL=http://localhost:8001
-```
-
-#### 3) Start the Flask client
-
-```bash
-cd client
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-# set API_BASE_URL in client/.env or app.py
-flask --app app run --host 0.0.0.0 --port 80
-```
-
-Open [http://localhost:80](http://localhost:80)
+4. Metrics & monitoring
+   - Flask client exposes Prometheus metrics via prometheus_flask_exporter; metrics include counters for creations, redirects, and failed redirects (see [client/app.py](client/app.py)).
+   - Prometheus scrapes the client; Grafana provides dashboards.
 
 ---
 
-## Environment Variables
+## Environment variables
 
-### Server (`server/.env`)
+- server/.env — used by API when starting with nodemon (see [server/.env](server/.env)):
+  - MONGO_URI (example): mongodb://kaap:kaap@mongodb/?directConnection=true
+  - PORT (example): 8001
 
-| Name          | Example                               | Description                                      |
-| ------------- | ------------------------------------- | ------------------------------------------------ |
-| `PORT`        | `8001`                                | Port for Express server                          |
-| `MONGO_URI`   | `mongodb://kaap:kaap@mongodb/?directConnection=true` | MongoDB connection string                        |
-| `CORS_ORIGIN` | `http://localhost:80`               | Allowed origin for Flask UI                      |
-| `BASE_URL`    | `http://localhost:8001`               | Public base URL used when generating short links |
+- client/.env — used by client to know where to call the API (see [client/.env](client/.env)):
+  - API_GET_ANALYTICS=http://server:8001/analytics
+  - API_GET_URL=http://server:8001/
+  - API_POST_URL=http://server:8001/url
 
-### Client (`client/.env`)
-
-| Name           | Example              | Description                            |
-| -------------- | -------------------- | -------------------------------------- |
-| `API_BASE_URL` | `http://server:8001` | Internal URL for API requests (Docker) |
-
+Notes:
+- In Docker Compose the services communicate by service name (e.g. `server`, `mongodb`), which matches these values.
+- Ensure `.env` files are present if you run containers locally and the container images rely on them.
 
 ---
 
-## API Reference
+## Run locally with Docker Compose (recommended)
 
-> Replace/augment below to match your actual routes.
+1. From repo root, build and start everything:
+   - Linux / macOS:
+     - docker compose up --build
+   - Windows (Docker Desktop):
+     - docker compose up --build
 
-### Create short URL
+2. Access services:
+   - Nginx (public entrypoint): http://localhost (port 80) and https://localhost (443, self-signed)
+     - Frontend is proxied at `/` by Nginx (see [nginx/default.conf](nginx/default.conf)).
+   - Prometheus UI: http://localhost/prometheus/ (proxied)
+   - Grafana UI: http://localhost/grafana/ (proxied)
 
-`POST /url`
+3. Quick API examples (direct to API container, without Nginx):
+   - Create short URL:
+     - curl -X POST http://localhost:8001/url -H "Content-Type: application/json" -d '{"url":"https://example.com"}'
+   - Redirect info:
+     - curl http://localhost:8001/<shortId>
+   - Analytics:
+     - curl http://localhost:8001/analytics/<shortId>
 
-```json
-{
-  "url": "https://example.com/very/long/path"
-}
-```
-
-**201 Created**
-
-```json
-{
-  "id": "abc123", // shortId
-  "redirectUrl": "https://example.com/very/long/path",
-}
-```
-
-### Redirect by shortId
-
-`GET /:shortId`
-
-- 302 redirect to the target URL.
-- Side effect: pushes `{ timestamp: <now> }` into `visitHistory`.
-
-### Analytics
-
-`GET /analytics/:shortId`
-**200 OK**
-
-```json
-{
-  "totalClicks": 42,
-  "visitHistory": [
-    { "timestamp": 1723500000000 },
-    { "timestamp": 1723600000000 }
-  ]
-}
-```
+Note: When using docker compose, the API container listens on 8001 internally. If you need to access API directly from host, you can add a ports mapping to docker-compose.yaml for the `server` service.
 
 ---
 
-## Data Model
+## Build images separately
 
-```js
-// server/src/models/URL.js (example)
-const URL = {
-  shortId: String,
-  redirectUrl: String,
-  visitHistory: [{ timestamp: Number }],
-};
-```
+- API:
+  - cd server
+  - docker build -t url-shortener-api:local .
+- Client:
+  - cd client
+  - docker build -t url-shortener-client:local -f dockerfile .
 
-- `shortId` – unique slug.
-- `redirectUrl` – destination URL.
-- `visitHistory` – list of click timestamps (epoch ms).
+- Nginx:
+  - cd nginx
+  - docker build -t url-shortener-nginx:local .
+
+---
+
+## CI / Lint / Tests
+
+- GitHub Actions workflow: [.github/workflows/test.yml](.github/workflows/test.yml) runs:
+  - Node.js: npm install, npx eslint ., npx jest --passWithNoTests
+  - Python (client): pip install -r requirements.txt, flake8, pytest
+- pre-push hook: [pre-push](pre-push) builds/testing inside Docker for pre-push checks.
+
+---
+
+## Troubleshooting
+
+- Mongo connection errors:
+  - Confirm `MONGO_URI` matches Mongo service credentials in [docker-compose.yaml](docker-compose.yaml).
+  - In compose, MongoDB image is `mongodb/mongodb-atlas-local:8.0.7` with env vars:
+    - MONGODB_INITDB_ROOT_USERNAME=kaap
+    - MONGODB_INITDB_ROOT_PASSWORD=kaap
+  - Ensure `server/.env` MONGO_URI uses kaap:kaap and hostname `mongodb` or override in docker-compose.
+
+- CORS or proxy issues:
+  - API sets `cors({ origin: "*" })` in [server/server.js](server/server.js) for testing.
+  - Nginx preserves Host and Real-IP headers (see [nginx/default.conf](nginx/default.conf)).
+
+- SSL / self-signed certs:
+  - Nginx uses self-signed certs from [nginx/certs/](nginx/certs/). Browsers will warn; for local testing you can use HTTP (port 80) or accept the self-signed cert.
+
+- Frontend shows errors when calling the API:
+  - Check [client/.env](client/.env) is present and matches the runtime network/service names.
+  - From inside containers, services resolve via Docker network names (e.g., `server`).
+
+---
+
+## Implementation notes & TODOs
+
+- Visit history schema uses a nested object key `Timestamp` in [server/models/url.js](server/models/url.js), but server/server.js pushes `{ timestamp: Date.now() }` (note lowercase) — this mismatch may cause inconsistent data. Consider unifying to `timestamp` (lowercase) in the schema:
+  - Edit [server/models/url.js](server/models/url.js) `visitHistory` item key to `timestamp`.
+- The API returns redirect data rather than issuing an HTTP redirect; the client performs the redirect. If you want the API to respond with a 302 directly, change the GET /:shortId handler in [server/server.js](server/server.js) to use res.redirect(url).
+- Docker Compose does not mount server/.env into the container environment explicitly; the Dockerfile copies repository files, so ensure .env is present during image build (or set env in compose).
+
+---
+
+## Security considerations
+
+- Do NOT use self-signed certs in production.
+- Use proper authentication for sensitive endpoints.
+- Sanitize user-supplied URLs and consider validating hosts to avoid open redirect abuse.
+- Store secrets (DB passwords, DockerHub tokens) in encrypted secrets for CI/CD (GitHub Secrets).
+
+---
+
+## Contact & further reading
+
+Open code references:
+- [server/server.js](server/server.js)
+- [server/controllers/url.js](server/controllers/url.js) — [`handleGenerateNewShortURL`](server/controllers/url.js)
+- [server/models/url.js](server/models/url.js) — [`URL`](server/models/url.js)
+- [server/connect.js](server/connect.js) — [`connectDB`](server/connect.js)
+- [server/routes/url.js](server/routes/url.js) — [`urlRoute`](server/routes/url.js)
+- [client/app.py](client/app.py) — [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py)
+- [docker-compose.yaml](docker-compose.yaml)
+- [nginx/default.conf](nginx/default.conf)
+- [prometheus/prometheus.yml](prometheus/prometheus.yml)
+- [grafana/grafana.ini](grafana/grafana.ini)
+
+Use `docker compose up --build` to bring the full stack up
