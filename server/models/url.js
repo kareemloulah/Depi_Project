@@ -13,7 +13,7 @@ const urlSchema = new Schema(
     },
     visitHistory: [
       {
-        Timestamp: {
+        timestamp: {
           type: Number,
         },
       },
