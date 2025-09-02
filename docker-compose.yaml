@@ -37,7 +37,7 @@ services:
   ####################
   mongodb:
     hostname: mongodb
-    image: mongodb/mongodb-atlas-local
+    image: mongodb/mongodb-atlas-local:8.0.7
     environment:
       - MONGODB_INITDB_ROOT_USERNAME=kaap
       - MONGODB_INITDB_ROOT_PASSWORD=kaap
