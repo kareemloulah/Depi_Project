@@ -1,0 +1,318 @@
+# -------------------------------
+# App NameSpace 
+# ------------------------------- 
+
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: url-shortener
+  labels: 
+    app: url-shortener 
+    environment: dev
+
+---
+
+# -------------------------------
+# API (Node.js Express) 
+# ------------------------------- 
+
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: url-api 
+  namespace: url-shortener
+  spec:
+    replicas: 1
+    selector: 
+    matchLabels: 
+      app: url-api 
+      template: 
+      metadata: 
+      labels: 
+      app: url-api 
+      spec: 
+      containers:
+      - name: api
+      image: loulah/url-shortener-api:latest # <-- replace with your API image 
+      ports: 
+        - containerPort: 8001 
+      env: 
+      - name: MONGO_URI 
+        value: mongodb://kaap:kaap@url-mongo:27017/shortener 
+      - name: PORT 
+      value: "8001" 
+
+---
+
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: url-api
+  namespace: url-shortener 
+spec: 
+  type: ClusterIP
+selector: 
+  app: url-api 
+ports:
+  - port: 8001 
+    targetPort: 8001 
+
+--- 
+
+# -------------------------------
+# Client (Flask)
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: url-client
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: url-client
+  template:
+    metadata:
+      labels:
+        app: url-client
+    spec:
+      containers:
+        - name: client
+          image: loulah/url-shortener-client:latest  # <-- replace with your Flask client image
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_GET_ANALYTICS
+              value: http://url-api:8001/analytics
+            - name: API_GET_URL
+              value: http://url-api:8001/
+            - name: API_POST_URL
+              value: http://url-api:8001/url
+            - name: PORT
+              value: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: url-client
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: url-client
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+
+# -------------------------------
+# MongoDB (StatefulSet)
+# -------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: url-mongo
+  namespace: url-shortener
+spec:
+  serviceName: url-mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app: url-mongo
+  template:
+    metadata:
+      labels:
+        app: url-mongo
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:6
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: kaap
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: kaap
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: url-mongo
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: url-mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+# -------------------------------
+# Prometheus Config
+# -------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: url-shortener
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+    scrape_configs:
+      - job_name: "url_shortener"
+        metrics_path: /metrics   # PrometheusMetrics exposes metrics here by default
+        static_configs:
+          - targets: ["client:80"]   # replace with your Flask host:port
+
+---
+# -------------------------------
+# Prometheus
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.53.0
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+
+
+---
+
+# -------------------------------
+# Grafana
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.1.4
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: admin
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+
+---
+
+# -------------------------------
+# Ingress
+# -------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: url-ingress
+  namespace: url-shortener
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: shortener.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: url-client
+                port:
+                  number: 5000
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  number: 9090
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
