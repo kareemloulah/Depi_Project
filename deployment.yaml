@@ -21,7 +21,7 @@ kind: Deployment
 metadata: 
   name: url-api 
   namespace: url-shortener
-  spec:
+spec:
     replicas: 1
     selector: 
     matchLabels: 
@@ -38,9 +38,9 @@ metadata:
         - containerPort: 8001 
       env: 
       - name: MONGO_URI 
-        value: mongodb://kaap:kaap@url-mongo:27017/shortener 
+        value: "mongodb://kaap:kaap@url-mongo:27017/shortener" 
       - name: PORT 
-      value: "8001" 
+        value: "8001" 
 
 ---
 
@@ -90,7 +90,8 @@ spec:
             - name: API_POST_URL
               value: http://url-api:8001/url
             - name: PORT
-              value: 80
+              value: "80"
+
 ---
 apiVersion: v1
 kind: Service
