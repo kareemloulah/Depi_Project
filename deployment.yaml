@@ -84,11 +84,11 @@ spec:
             - containerPort: 80
           env:
             - name: API_GET_ANALYTICS
-              value: http://url-api:8001/analytics
+              value: http://url-api/analytics
             - name: API_GET_URL
-              value: http://url-api:8001/
+              value: http://url-api/
             - name: API_POST_URL
-              value: http://url-api:8001/url
+              value: http://url-api/url
             - name: PORT
               value: "80"
 
@@ -181,7 +181,7 @@ data:
       - job_name: "url_shortener"
         metrics_path: /metrics   # PrometheusMetrics exposes metrics here by default
         static_configs:
-          - targets: ["client:80"]   # replace with your Flask host:port
+          - targets: ["url-client:80"]   # replace with your Flask host:port
 
 ---
 # -------------------------------
@@ -265,6 +265,7 @@ spec:
               value: admin
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -293,7 +294,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: local
+    - host: url-shortener.local
       http:
         paths:
           - path: /
