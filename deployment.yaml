@@ -22,25 +22,25 @@ metadata:
   name: url-api 
   namespace: url-shortener
 spec:
-    replicas: 1
-    selector: 
+  replicas: 1
+  selector: 
     matchLabels: 
       app: url-api 
-      template: 
-      metadata: 
+  template: 
+    metadata: 
       labels: 
-      app: url-api 
-      spec: 
+        app: url-api 
+    spec: 
       containers:
-      - name: api
-      image: loulah/url-shortener-api:latest # <-- replace with your API image 
-      ports: 
-        - containerPort: 8001 
-      env: 
-      - name: MONGO_URI 
-        value: "mongodb://kaap:kaap@url-mongo:27017/shortener" 
-      - name: PORT 
-        value: "8001" 
+        - name: api
+          image: loulah/url-shortener-api:latest
+          ports: 
+            - containerPort: 8001 
+          env: 
+            - name: MONGO_URI 
+              value: "mongodb://kaap:kaap@url-mongo:27017/shortener" 
+            - name: PORT 
+              value: "8001" 
 
 ---
 
@@ -51,9 +51,9 @@ metadata:
   namespace: url-shortener 
 spec: 
   type: ClusterIP
-selector: 
-  app: url-api 
-ports:
+  selector: 
+    app: url-api 
+  ports:
   - port: 8001 
     targetPort: 8001 
 
@@ -293,7 +293,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: shortener.local
+    - host: local
       http:
         paths:
           - path: /
@@ -302,7 +302,7 @@ spec:
               service:
                 name: url-client
                 port:
-                  number: 5000
+                  number: 80
           - path: /prometheus
             pathType: Prefix
             backend:
