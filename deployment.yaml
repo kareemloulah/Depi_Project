@@ -38,7 +38,7 @@ spec:
             - containerPort: 8001 
           env: 
             - name: MONGO_URI 
-              value: "mongodb://kaap:kaap@url-mongo:27017/shortener" 
+              value: "mongodb://kaap:kaap@url-mongo:27017/?directConnection=true" 
             - name: PORT 
               value: "8001" 
 
@@ -84,11 +84,11 @@ spec:
             - containerPort: 80
           env:
             - name: API_GET_ANALYTICS
-              value: http://url-api/analytics
+              value: http://url-api:8001/analytics
             - name: API_GET_URL
-              value: http://url-api/
+              value: http://url-api:8001/
             - name: API_POST_URL
-              value: http://url-api/url
+              value: http://url-api:8001/url
             - name: PORT
               value: "80"
 
@@ -129,20 +129,29 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:6
+          image: mongodb/mongodb-atlas-local:8.0.7
           ports:
             - containerPort: 27017
           env:
-            - name: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGODB_INITDB_ROOT_USERNAME
               value: kaap
-            - name: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGODB_INITDB_ROOT_PASSWORD
               value: kaap
           volumeMounts:
             - name: mongo-data
               mountPath: /data/db
+            - name: mongo-config
+              mountPath: /data/configdb
   volumeClaimTemplates:
     - metadata:
         name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: mongo-config
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
@@ -207,15 +216,38 @@ spec:
           image: prom/prometheus:v2.53.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
+            - '--web.external-url=/prometheus/'
+            - '--web.route-prefix=/prometheus/'
           ports:
             - containerPort: 9090
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: /etc/prometheus
+            - name: prometheus-storage
+              mountPath: /prometheus
       volumes:
         - name: prometheus-config-volume
           configMap:
             name: prometheus-config
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+# in grafana when adding new Data Source it should de http://prometheus:9090/prometheus
+ 
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: url-shortener
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
 
 ---
 
@@ -263,6 +295,32 @@ spec:
               value: admin
             - name: GF_SECURITY_ADMIN_PASSWORD
               value: admin
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s/grafana"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+          volumeMounts:
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: url-shortener
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
 
 ---
 
@@ -282,28 +340,19 @@ spec:
 ---
 
 # -------------------------------
-# Ingress
+# Ingress for Prometheus & Grafana (HTTP only)
 # -------------------------------
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: url-ingress
+  name: monitoring-ingress
   namespace: url-shortener
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-    - host: url-shortener.local
+    - host: url-shortener.local   # change if you use a real domain
       http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: url-client
-                port:
-                  number: 80
           - path: /prometheus
             pathType: Prefix
             backend:
@@ -318,3 +367,31 @@ spec:
                 name: grafana
                 port:
                   number: 3000
+
+---
+
+# -------------------------------
+# Ingress for Client (HTTPS only)
+# -------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: client-ingress
+  namespace: url-shortener
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - url-shortener.local   # same host, but HTTPS
+      secretName: selfsigned-cert
+  rules:
+    - host: url-shortener.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: url-client
+                port:
+                  number: 80
