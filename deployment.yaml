@@ -81,7 +81,7 @@ spec:
         - name: client
           image: loulah/url-shortener-client:latest  # <-- replace with your Flask client image
           ports:
-            - containerPort: 80
+            - containerPort: 5000
           env:
             - name: API_GET_ANALYTICS
               value: http://url-api:8001/analytics
@@ -90,7 +90,11 @@ spec:
             - name: API_POST_URL
               value: http://url-api:8001/url
             - name: PORT
-              value: "80"
+              value: "5000"
+            - name: Pod_number
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
 
 ---
 apiVersion: v1
@@ -103,8 +107,8 @@ spec:
   selector:
     app: url-client
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 5000
+      targetPort: 5000
 
 ---
 
@@ -190,7 +194,8 @@ data:
       - job_name: "url_shortener"
         metrics_path: /metrics   # PrometheusMetrics exposes metrics here by default
         static_configs:
-          - targets: ["url-client:80"]   # replace with your Flask host:port
+          - targets: ["url-client:5000"]   # replace with your Flask host:port
+
 
 ---
 # -------------------------------
@@ -213,7 +218,7 @@ spec:
     spec:
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.53.0
+          image: prom/prometheus:v3.5.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - '--web.external-url=/prometheus/'
@@ -233,7 +238,6 @@ spec:
           persistentVolumeClaim:
             claimName: prometheus-pvc
 # in grafana when adding new Data Source it should de http://prometheus:9090/prometheus
- 
 
 ---
 
@@ -263,7 +267,6 @@ spec:
   ports:
     - port: 9090
       targetPort: 9090
-
 
 ---
 
@@ -298,7 +301,7 @@ spec:
             - name: GF_SERVER_ROOT_URL
               value: "%(protocol)s://%(domain)s/grafana"
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
-              value: "true"
+              value: 'true'
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
@@ -394,4 +397,4 @@ spec:
               service:
                 name: url-client
                 port:
-                  number: 80
+                  number: 5000
