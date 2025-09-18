@@ -3,16 +3,9 @@
 This repository implements a simple URL shortener with observability (Prometheus + Grafana) and an Nginx reverse-proxy. It contains:
 
 - API (Node.js / Express / MongoDB) — [server/server.js](server/server.js)  
-  - DB connection helper: [`connectDB`](server/connect.js) — [server/connect.js](server/connect.js)  
-  - Routes: [`urlRoute`](server/routes/url.js) — [server/routes/url.js](server/routes/url.js)  
-  - Controller: [`handleGenerateNewShortURL`](server/controllers/url.js) — [server/controllers/url.js](server/controllers/url.js)  
-  - Mongoose model: [`URL`](server/models/url.js) — [server/models/url.js](server/models/url.js)  
-  - Dockerfile: [server/Dockerfile](server/Dockerfile)  
-  - package.json: [server/package.json](server/package.json)
+  
 - Frontend (Flask) — [client/app.py](client/app.py)  
-  - Flask endpoints: [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py) — see [client/app.py](client/app.py)  
-  - Dockerfile: [client/dockerfile](client/dockerfile)  
-  - requirements: [client/requirements.txt](client/requirements.txt)
+  
 - Reverse proxy (Nginx) — [nginx/default.conf](nginx/default.conf), [nginx/nginx.conf](nginx/nginx.conf), [nginx/Dockerfile](nginx/Dockerfile) and TLS certs in [nginx/certs/](nginx/certs/)
 - Observability
   - Prometheus config: [prometheus/prometheus.yml](prometheus/prometheus.yml)
@@ -33,23 +26,6 @@ This repository implements a simple URL shortener with observability (Prometheus
   See [nginx/default.conf](nginx/default.conf).
 - Prometheus scrapes the Flask client for metrics at /metrics (configured in [prometheus/prometheus.yml](prometheus/prometheus.yml)).
 - Grafana is configured for dashboards using [grafana/grafana.ini](grafana/grafana.ini).
-
----
-
-## Important files & symbols (quick links)
-
-- API entrypoint: [server/server.js](server/server.js)  
-- DB connector: [`connectDB`](server/connect.js) — [server/connect.js](server/connect.js)  
-- URL controller: [`handleGenerateNewShortURL`](server/controllers/url.js) — [server/controllers/url.js](server/controllers/url.js)  
-- Router: [`urlRoute`](server/routes/url.js) — [server/routes/url.js](server/routes/url.js)  
-- Mongoose model: [`URL`](server/models/url.js) — [server/models/url.js](server/models/url.js)  
-- Frontend app: [client/app.py](client/app.py) — functions: [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py)  
-- Compose orchestration: [docker-compose.yaml](docker-compose.yaml)  
-- Nginx config: [nginx/default.conf](nginx/default.conf)  
-- Prometheus config: [prometheus/prometheus.yml](prometheus/prometheus.yml)  
-- Grafana config: [grafana/grafana.ini](grafana/grafana.ini)  
-- CI: [.github/workflows/test.yml](.github/workflows/test.yml)  
-- Local pre-push: [pre-push](pre-push)
 
 ---
 
@@ -130,10 +106,6 @@ Note: When using docker compose, the API container listens on 8001 internally. I
   - cd client
   - docker build -t url-shortener-client:local -f dockerfile .
 
-- Nginx:
-  - cd nginx
-  - docker build -t url-shortener-nginx:local .
-
 ---
 
 ## CI / Lint / Tests
@@ -145,58 +117,21 @@ Note: When using docker compose, the API container listens on 8001 internally. I
 
 ---
 
-## Troubleshooting
+## Important files & symbols (quick links)
 
-- Mongo connection errors:
-  - Confirm `MONGO_URI` matches Mongo service credentials in [docker-compose.yaml](docker-compose.yaml).
-  - In compose, MongoDB image is `mongodb/mongodb-atlas-local:8.0.7` with env vars:
-    - MONGODB_INITDB_ROOT_USERNAME=kaap
-    - MONGODB_INITDB_ROOT_PASSWORD=kaap
-  - Ensure `server/.env` MONGO_URI uses kaap:kaap and hostname `mongodb` or override in docker-compose.
-
-- CORS or proxy issues:
-  - API sets `cors({ origin: "*" })` in [server/server.js](server/server.js) for testing.
-  - Nginx preserves Host and Real-IP headers (see [nginx/default.conf](nginx/default.conf)).
-
-- SSL / self-signed certs:
-  - Nginx uses self-signed certs from [nginx/certs/](nginx/certs/). Browsers will warn; for local testing you can use HTTP (port 80) or accept the self-signed cert.
-
-- Frontend shows errors when calling the API:
-  - Check [client/.env](client/.env) is present and matches the runtime network/service names.
-  - From inside containers, services resolve via Docker network names (e.g., `server`).
+- API entrypoint: [server/server.js](server/server.js)  
+- DB connector: [`connectDB`](server/connect.js) — [server/connect.js](server/connect.js)  
+- URL controller: [`handleGenerateNewShortURL`](server/controllers/url.js) — [server/controllers/url.js](server/controllers/url.js)  
+- Router: [`urlRoute`](server/routes/url.js) — [server/routes/url.js](server/routes/url.js)  
+- Mongoose model: [`URL`](server/models/url.js) — [server/models/url.js](server/models/url.js)  
+- Frontend app: [client/app.py](client/app.py) — functions: [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py)  
+- Compose orchestration: [docker-compose.yaml](docker-compose.yaml)  
+- Nginx config: [nginx/default.conf](nginx/default.conf)  
+- Prometheus config: [prometheus/prometheus.yml](prometheus/prometheus.yml)  
+- Grafana config: [grafana/grafana.ini](grafana/grafana.ini)  
+- CI: [.github/workflows/test.yml](.github/workflows/test.yml)  
+- Local pre-push: [pre-push](pre-push)
 
 ---
-
-## Implementation notes & TODOs
-
-- Visit history schema uses a nested object key `Timestamp` in [server/models/url.js](server/models/url.js), but server/server.js pushes `{ timestamp: Date.now() }` (note lowercase) — this mismatch may cause inconsistent data. Consider unifying to `timestamp` (lowercase) in the schema:
-  - Edit [server/models/url.js](server/models/url.js) `visitHistory` item key to `timestamp`.
-- The API returns redirect data rather than issuing an HTTP redirect; the client performs the redirect. If you want the API to respond with a 302 directly, change the GET /:shortId handler in [server/server.js](server/server.js) to use res.redirect(url).
-- Docker Compose does not mount server/.env into the container environment explicitly; the Dockerfile copies repository files, so ensure .env is present during image build (or set env in compose).
-
----
-
-## Security considerations
-
-- Do NOT use self-signed certs in production.
-- Use proper authentication for sensitive endpoints.
-- Sanitize user-supplied URLs and consider validating hosts to avoid open redirect abuse.
-- Store secrets (DB passwords, DockerHub tokens) in encrypted secrets for CI/CD (GitHub Secrets).
-
----
-
-## Contact & further reading
-
-Open code references:
-- [server/server.js](server/server.js)
-- [server/controllers/url.js](server/controllers/url.js) — [`handleGenerateNewShortURL`](server/controllers/url.js)
-- [server/models/url.js](server/models/url.js) — [`URL`](server/models/url.js)
-- [server/connect.js](server/connect.js) — [`connectDB`](server/connect.js)
-- [server/routes/url.js](server/routes/url.js) — [`urlRoute`](server/routes/url.js)
-- [client/app.py](client/app.py) — [`index`](client/app.py), [`go`](client/app.py), [`Analytics`](client/app.py)
-- [docker-compose.yaml](docker-compose.yaml)
-- [nginx/default.conf](nginx/default.conf)
-- [prometheus/prometheus.yml](prometheus/prometheus.yml)
-- [grafana/grafana.ini](grafana/grafana.ini)
 
 Use `docker compose up --build` to bring the full stack up
