@@ -27,7 +27,7 @@ services:
     depends_on:
       - mongodb
     expose:
-      - "80"
+      - "5000"
     networks:
       - url-shortener
     restart: unless-stopped
