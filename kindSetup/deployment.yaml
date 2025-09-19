@@ -41,7 +41,13 @@ spec:
               value: "mongodb://kaap:kaap@url-mongo:27017/?directConnection=true" 
             - name: PORT 
               value: "8001" 
-
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
 ---
 
 apiVersion: v1 
@@ -95,6 +101,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
 
 ---
 apiVersion: v1
@@ -146,6 +159,13 @@ spec:
               mountPath: /data/db
             - name: mongo-config
               mountPath: /data/configdb
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
   volumeClaimTemplates:
     - metadata:
         name: mongo-data
@@ -230,6 +250,13 @@ spec:
               mountPath: /etc/prometheus
             - name: prometheus-storage
               mountPath: /prometheus
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
       volumes:
         - name: prometheus-config-volume
           configMap:
@@ -305,6 +332,13 @@ spec:
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
       volumes:
         - name: grafana-storage
           persistentVolumeClaim:

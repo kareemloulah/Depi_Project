@@ -1,0 +1,13 @@
+# for auto completion and alias
+apt update && apt install bash-completion
+echo 'alias k=kubectl' >> ~/.bashrc
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+echo '# Use bash-completion, if available
+[[ $PS1 && -f /usr/share/bash-completion/bash_completion ]] && \
+    . /usr/share/bash-completion/bash_completion' >> ~/.bashrc
+echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+
+
+
+# crt
+kubectl create secret tls selfsigned-cert --key ../nginx/certs/selfsigned.key --cert ../nginx/certs/selfsigned.crt -n url-shortener
