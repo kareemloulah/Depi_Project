@@ -11,3 +11,14 @@ echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
 # crt
 kubectl create secret tls selfsigned-cert --key ../nginx/certs/selfsigned.key --cert ../nginx/certs/selfsigned.crt -n url-shortener
+
+# testing end point from client 
+wget -qO- --header="Content-Type: application/json" --post-data='{"url":"https://www.facebook.com"}' http://url-api:8001/url
+# shold respond with shortID as per api setup 
+
+## apply cluster 
+# then apply ingress-nginx
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# then apply deployment 
+# apply keys 
+# forward ingress-nginx

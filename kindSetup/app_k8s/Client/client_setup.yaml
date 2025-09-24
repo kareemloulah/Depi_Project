@@ -1,0 +1,54 @@
+
+# -------------------------------
+# Client (Flask)
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-dep
+  namespace: url-shortener
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: client-dep-pod
+  template:
+    metadata:
+      labels:
+        app: client-dep-pod
+    spec:
+      containers:
+        - name: client
+          image: loulah/url-shortener-client:latest  # <-- replace with your Flask client image
+          ports:
+            - containerPort: 5000
+          env:
+            - name: API_GET_ANALYTICS
+              value: http://api-svc.url-shortener.svc.cluster.local:8001/analytics
+            - name: API_GET_URL
+              value: http://api-svc.url-shortener.svc.cluster.local:8001/
+            - name: API_POST_URL
+              value: http://api-svc.url-shortener.svc.cluster.local:8001/url
+            - name: PORT
+              value: "5000"
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-svc
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: client-dep-pod
+  ports:
+    - port: 5000
+      targetPort: 5000
