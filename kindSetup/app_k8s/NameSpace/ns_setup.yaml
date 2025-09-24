@@ -1,0 +1,11 @@
+# -------------------------------
+# App NameSpace 
+# ------------------------------- 
+
+apiVersion: v1
+kind: Namespace
+metadata: 
+  name: url-shortener
+  labels: 
+    app: url-shortener 
+    environment: dev
