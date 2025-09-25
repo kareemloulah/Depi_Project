@@ -32,23 +32,23 @@ services:
       - url-shortener
     restart: unless-stopped
 
-  ####################
-  # DataBase service #
-  ####################
-  mongodb:
-    hostname: mongodb
-    image: mongodb/mongodb-atlas-local:8.0.7
-    environment:
-      - MONGODB_INITDB_ROOT_USERNAME=${{ secrets.DB_USERNAME }}
-      - MONGODB_INITDB_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
-    expose:
-      - "27017"
-    volumes:
-      - data:/data/db
-      - config:/data/configdb
-    networks:
-      - url-shortener
-    restart: unless-stopped
+  # ####################
+  # # DataBase service #
+  # ####################
+  # mongodb:
+  #   hostname: mongodb
+  #   image: mongodb/mongodb-atlas-local:8.0.7
+  #   environment:
+  #     - MONGODB_INITDB_ROOT_USERNAME=${{ secrets.DB_USERNAME }}
+  #     - MONGODB_INITDB_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
+  #   expose:
+  #     - "27017"
+  #   volumes:
+  #     - data:/data/db
+  #     - config:/data/configdb
+  #   networks:
+  #     - url-shortener
+  #   restart: unless-stopped
 
   #################
   # Nginx service #
