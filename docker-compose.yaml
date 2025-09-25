@@ -39,8 +39,8 @@ services:
     hostname: mongodb
     image: mongodb/mongodb-atlas-local:8.0.7
     environment:
-      - MONGODB_INITDB_ROOT_USERNAME=kaap
-      - MONGODB_INITDB_ROOT_PASSWORD=kaap
+      - MONGODB_INITDB_ROOT_USERNAME=${{ secrets.DB_USERNAME }}
+      - MONGODB_INITDB_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
     expose:
       - "27017"
     volumes:
