@@ -26,7 +26,7 @@ spec:
             - containerPort: 8001 
           env: 
             - name: MONGO_URI 
-              value: "mongodb://kaap:kaap@mongo-svc.url-shortener.svc.cluster.local:27017/?authSource=admin" 
+              value: "mongodb+srv://${{DB_CPASSWORD}}:${{DB_CPASSWORD}}@development.zgc1n.mongodb.net/?retryWrites=true&w=majority&appName=Development" 
             - name: PORT 
               value: "8001" 
           resources:

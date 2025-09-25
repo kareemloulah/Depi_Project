@@ -24,11 +24,11 @@ spec:
             - containerPort: 5000
           env:
             - name: API_GET_ANALYTICS
-              value: http://api-svc.url-shortener.svc.cluster.local:8001/analytics
+              value: http://api-svc:8001/analytics
             - name: API_GET_URL
-              value: http://api-svc.url-shortener.svc.cluster.local:8001/
+              value: http://api-svc:8001/
             - name: API_POST_URL
-              value: http://api-svc.url-shortener.svc.cluster.local:8001/url
+              value: http://api-svc:8001/url
             - name: PORT
               value: "5000"
           resources:
