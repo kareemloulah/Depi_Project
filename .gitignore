@@ -3,3 +3,5 @@ node_modules/
 .vscode/
 /kindSetup/certs/tls.crt
 /kindSetup/certs/tls.key
+/server/.env
+/client/.env
