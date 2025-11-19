@@ -26,7 +26,7 @@ spec:
             - containerPort: 8001 
           env: 
             - name: MONGO_URI 
-              value: "mongodb+srv://${{DB_CUSERNAME}}:${{DB_CPASSWORD}}@development.zgc1n.mongodb.net/?retryWrites=true&w=majority&appName=Development" 
+              value: "mongodb+srv://${{DB_CUSERNAME}}:${{DB_CPASSWORD}}@development.zgc1n.mongodb.net/?appName=Development" 
             - name: PORT 
               value: "8001" 
           resources:

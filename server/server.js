@@ -9,7 +9,7 @@ import { URL } from "./models/url.js";
   PORT should be defined in your environment (e.g. via .env or your deployment).
 */
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8001 ;
 
 // Configure CORS:
 // - By default allows all origins: app.use(cors())

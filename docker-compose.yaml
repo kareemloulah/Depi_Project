@@ -8,8 +8,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: server
-    depends_on:
-      - mongodb
+    # depends_on:
+    #   - mongodb
     expose:
       - "8001"
     networks:
@@ -24,8 +24,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
     container_name: client
-    depends_on:
-      - mongodb
+    # depends_on:
+    #   - mongodb
     expose:
       - "5000"
     networks:
