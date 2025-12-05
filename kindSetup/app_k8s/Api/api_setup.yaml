@@ -23,12 +23,7 @@ spec:
           image: loulah/url-shortener-api:latest
           command: ["sh", "-c", "ulimit -n 65536 && npm run start"]
           ports: 
-            - containerPort: 8001 
-          env: 
-            - name: MONGO_URI 
-              value: "mongodb+srv://${{DB_CUSERNAME}}:${{DB_CPASSWORD}}@development.zgc1n.mongodb.net/?appName=Development" 
-            - name: PORT 
-              value: "8001" 
+            - containerPort: 8001
           resources:
               requests:
                 memory: "64Mi"
@@ -36,9 +31,15 @@ spec:
               limits:
                 memory: "128Mi"
                 cpu: "500m"
-
+          volumeMounts:
+            - name: api-config-volume
+              mountPath: /app/.env
+              subPath: .env
+      volumes:
+        - name: api-config-volume
+          configMap:
+            name: api-config
 ---
-
 apiVersion: v1 
 kind: Service 
 metadata: 
@@ -51,3 +52,13 @@ spec:
   ports:
   - port: 8001 
     targetPort: 8001
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: url-shortener 
+data:
+  .env: |
+    MONGO_URI=mongodb://kaap:kaap@mongo-svc.url-shortener.svc.cluster.local:27017/?directConnection=true
+    PORT=8001

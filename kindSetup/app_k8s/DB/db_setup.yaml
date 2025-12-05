@@ -65,10 +65,9 @@ metadata:
   name: mongo-svc
   namespace: url-shortener
 spec:
-  type: ClusterIP
+  ClusterIP: none
   selector:
     app: mongo-ss-pod
   ports:
     - port: 27017
       targetPort: 27017
-
