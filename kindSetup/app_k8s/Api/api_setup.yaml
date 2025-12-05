@@ -9,7 +9,7 @@ metadata:
   name: api-dep 
   namespace: url-shortener
 spec:
-  replicas: 2
+  replicas: 1
   selector: 
     matchLabels: 
       app: api-dep-pod 
@@ -22,6 +22,9 @@ spec:
         - name: api
           image: loulah/url-shortener-api:latest
           command: ["sh", "-c", "ulimit -n 65536 && npm run start"]
+          args:
+            - sysctl -w fs.inotify.max_user_watches=524288; \
+              nodemon --env-file=.env server.js
           ports: 
             - containerPort: 8001
           resources:
@@ -60,5 +63,5 @@ metadata:
   namespace: url-shortener 
 data:
   .env: |
-    MONGO_URI=mongodb://kaap:kaap@mongo-svc.url-shortener.svc.cluster.local:27017/?directConnection=true
+    MONGO_URI=mongodb://mongo-svc:27017/url
     PORT=8001
