@@ -8,7 +8,7 @@ metadata:
   name: client-dep
   namespace: url-shortener
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: client-dep-pod
@@ -40,6 +40,7 @@ spec:
                 cpu: "500m"
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:

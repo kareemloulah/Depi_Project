@@ -63,5 +63,5 @@ metadata:
   namespace: url-shortener 
 data:
   .env: |
-    MONGO_URI=mongodb://mongo-svc:27017/url
+    MONGO_URI=mongodb://mongo-svc.url-shortener.svc.cluster.local:27017/url
     PORT=8001
