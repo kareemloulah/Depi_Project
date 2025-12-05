@@ -16,7 +16,6 @@ data:
         static_configs:
           - targets: ["client-svc:5000"]   # replace with your Flask host:port
 
-
 ---
 # -------------------------------
 # Prometheus
@@ -64,7 +63,7 @@ spec:
         - name: prometheus-storage
           persistentVolumeClaim:
             claimName: prometheus-pvc
-# in grafana when adding new Data Source it should de http://prometheus:9090/prometheus
+# in grafana when adding new Data Source it should de http://prometheus-svc:9090/prometheus
 
 ---
 
