@@ -1,0 +1,95 @@
+# -------------------------------
+# Prometheus Config
+# -------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: url-shortener
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+    scrape_configs:
+      - job_name: "url_shortener"
+        metrics_path: /metrics   # PrometheusMetrics exposes metrics here by default
+        static_configs:
+          - targets: ["client-svc:5000"]   # replace with your Flask host:port
+
+---
+# -------------------------------
+# Prometheus
+# -------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-dep
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-dep-pod
+  template:
+    metadata:
+      labels:
+        app: prometheus-dep-pod
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v3.5.0
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - '--web.external-url=/prometheus/'
+            - '--web.route-prefix=/prometheus/'
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus
+            - name: prometheus-storage
+              mountPath: /prometheus
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+# in grafana when adding new Data Source it should de http://prometheus-svc:9090/prometheus
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: url-shortener
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-svc
+  namespace: url-shortener
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus-dep-pod
+  ports:
+    - port: 9090
+      targetPort: 9090

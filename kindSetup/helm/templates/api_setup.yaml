@@ -1,0 +1,67 @@
+
+# -------------------------------
+# API (Node.js Express) 
+# ------------------------------- 
+
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: api-dep 
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: api-dep-pod 
+  template: 
+    metadata: 
+      labels: 
+        app: api-dep-pod 
+    spec: 
+      containers:
+        - name: api
+          image: loulah/url-shortener-api:latest
+          command: ["sh", "-c", "ulimit -n 65536 && npm run start"]
+          args:
+            - sysctl -w fs.inotify.max_user_watches=524288; \
+              nodemon --env-file=.env server.js
+          ports: 
+            - containerPort: 8001
+          resources:
+              requests:
+                memory: "64Mi"
+                cpu: "250m"
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
+          volumeMounts:
+            - name: api-config-volume
+              mountPath: /app/.env
+              subPath: .env
+      volumes:
+        - name: api-config-volume
+          configMap:
+            name: api-config
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: api-svc
+  namespace: url-shortener 
+spec: 
+  type: ClusterIP
+  selector: 
+    app: api-dep-pod 
+  ports:
+  - port: 8001 
+    targetPort: 8001
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: url-shortener 
+data:
+  .env: |
+    MONGO_URI=mongodb://mongo-svc.url-shortener.svc.cluster.local:27017/url
+    PORT=8001
