@@ -63,7 +63,7 @@ def index():
     return (render_template(
         "index.html",
         response=response_text,
-        base_url=host),
+        base_url=host,fullurl=base_url),
         200
         )
 
