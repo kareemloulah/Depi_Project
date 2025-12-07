@@ -14,7 +14,7 @@ data:
       - job_name: "url_shortener"
         metrics_path: /metrics   # PrometheusMetrics exposes metrics here by default
         static_configs:
-          - targets: ["client-svc:5000"]   # replace with your Flask host:port
+          - targets: ["client-svc.url-shortener.svc.cluster.local:5000"]   # replace with your Flask host:port
 
 ---
 # -------------------------------

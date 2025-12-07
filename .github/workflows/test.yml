@@ -9,9 +9,9 @@ on:
       - main
 
 jobs:
-  # ---------------------------
-  # 1. Continuous Integration
-  # ---------------------------
+  ---------------------------
+  1. Continuous Integration
+  ---------------------------
   ci:
     runs-on: ubuntu-latest
     services:
@@ -32,7 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # -------- Node.js API --------
+      -------- Node.js API --------
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           MONGO_URI: mongodb://testuser:testpass@localhost:27017/url-shortener?authSource=admin
         run: npx jest --passWithNoTests
 
-      # -------- Python Client --------
+      -------- Python Client --------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -72,9 +72,7 @@ jobs:
         working-directory: client
         run: pytest || echo "No tests found, skipping..."
 
-  # ---------------------------
-  # 2. Continuous Delivery
-  # ---------------------------
+
   cd:
     needs: ci
     runs-on: ubuntu-latest
@@ -83,7 +81,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # -------- Docker Build & Push --------
+
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
@@ -101,17 +99,14 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-client:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/url-shortener-client:${{ github.run_number}}
 
-
-    ## Needs to be configured with your EC2 details
-      # # -------- Deploy to EC2 --------
-      # - name: Deploy via SSH
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.EC2_HOST }}
-      #     username: ${{ secrets.EC2_USER }}
-      #     key: ${{ secrets.EC2_SSH_KEY }}
-      #     script: |
-      #       cd /home/${{ secrets.EC2_USER }}/Depi_Project
-      #       git pull origin main
-      #       docker-compose pull
-      #       docker-compose up -d --remove-orphans
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.EC2_USER }}/Depi_Project
+            git pull origin main
+            docker compose pull
+            docker compose up -d --build
