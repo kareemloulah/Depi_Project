@@ -45,7 +45,6 @@ def index():
     # preserves the real host From nginx
     # will be localhost if ran Locally or public IP of server
     host = request.headers.get("Host")
-    base_url = f"https://{host}"
 
     if request.method == "POST":
         user_url = request.form.get("url")
