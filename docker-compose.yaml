@@ -96,7 +96,7 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - gdash:/etc/grafana/provisioning/dashboards
     expose:
       - "3000"
     networks:
@@ -130,6 +130,7 @@ volumes:
   data:
   prometheus-data:
   grafana-storage:
+  gdash:
 
 networks:
   url-shortener:
